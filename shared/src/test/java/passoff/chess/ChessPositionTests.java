@@ -13,6 +13,7 @@ public class ChessPositionTests {
     private ChessPosition original;
     private ChessPosition equal;
     private ChessPosition different;
+
     @BeforeEach
     public void setUp() {
         original = new ChessPosition(3, 7);
@@ -31,9 +32,11 @@ public class ChessPositionTests {
     @DisplayName("HashCode Testing")
     public void hashTest() {
         Assertions.assertEquals(original.hashCode(), equal.hashCode(),
-                "hashCode returned different values for equal positions");
+            "hashCode returned different values for equal positions"
+        );
         Assertions.assertNotEquals(original.hashCode(), different.hashCode(),
-                "hashCode returned the same value for different positions");
+            "hashCode returned the same value for different positions"
+        );
     }
 
     @Test

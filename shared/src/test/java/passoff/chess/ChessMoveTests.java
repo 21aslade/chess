@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class ChessMoveTests {
     private ChessMove original;
     private ChessMove equal;
     private ChessMove startDifferent;
     private ChessMove endDifferent;
     private ChessMove promoteDifferent;
+
     @BeforeEach
     public void setUp() {
         original = new ChessMove(new ChessPosition(2, 6), new ChessPosition(1, 5), null);
@@ -25,7 +25,8 @@ public class ChessMoveTests {
         startDifferent = new ChessMove(new ChessPosition(2, 4), new ChessPosition(1, 5), null);
         endDifferent = new ChessMove(new ChessPosition(2, 6), new ChessPosition(5, 3), null);
         promoteDifferent = new ChessMove(new ChessPosition(2, 6), new ChessPosition(1, 5),
-                ChessPiece.PieceType.QUEEN);
+            ChessPiece.PieceType.QUEEN
+        );
     }
 
     @Test
@@ -41,13 +42,17 @@ public class ChessMoveTests {
     @DisplayName("HashCode Testing")
     public void hashTest() {
         Assertions.assertEquals(original.hashCode(), equal.hashCode(),
-                "hashCode returned different values for equal moves");
+            "hashCode returned different values for equal moves"
+        );
         Assertions.assertNotEquals(original.hashCode(), startDifferent.hashCode(),
-                "hashCode returned the same value for different moves");
+            "hashCode returned the same value for different moves"
+        );
         Assertions.assertNotEquals(original.hashCode(), endDifferent.hashCode(),
-                "hashCode returned the same value for different moves");
+            "hashCode returned the same value for different moves"
+        );
         Assertions.assertNotEquals(original.hashCode(), promoteDifferent.hashCode(),
-                "hashCode returned the same value for different moves");
+            "hashCode returned the same value for different moves"
+        );
     }
 
     @Test
