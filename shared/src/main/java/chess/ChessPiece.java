@@ -1,5 +1,7 @@
 package chess;
 
+import chess.ChessGame.TeamColor;
+
 import java.util.Collection;
 import java.util.Objects;
 
@@ -9,44 +11,11 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessPiece {
-
-    private final ChessGame.TeamColor pieceColor;
-    private final PieceType type;
-
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        this.pieceColor = pieceColor;
-        this.type = type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pieceColor, type);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ChessPiece that)) {
-            return false;
-        }
-        return pieceColor == that.pieceColor && type == that.type;
-    }
-
-    @Override
-    public String toString() {
-        return "ChessPiece{" +
-            "pieceColor=" + pieceColor +
-            ", type=" + type +
-            '}';
-    }
-
+public record ChessPiece(TeamColor pieceColor, PieceType type) {
     /**
      * @return Which team this chess piece belongs to
      */
-    public ChessGame.TeamColor getTeamColor() {
+    public TeamColor getTeamColor() {
         return this.pieceColor;
     }
 
