@@ -10,7 +10,8 @@ public class ChessBoard {
     static final int boardSize = 8;
     private ChessPiece[][] pieces = new ChessPiece[boardSize][boardSize];
 
-    public ChessBoard() {}
+    public ChessBoard() {
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -19,7 +20,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        this.pieces[position.getColumn() - 1][position.getRow() - 1] = piece;
+        this.pieces[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
     /**
@@ -30,7 +31,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return this.pieces[position.getColumn() - 1][position.getRow() - 1];
+        return this.pieces[position.getRow() - 1][position.getColumn() - 1];
     }
 
     /**
