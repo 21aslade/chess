@@ -93,7 +93,7 @@ class MoveHelpers {
         var moves = new ArrayList<ChessMove>();
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                var target = new ChessPosition(start.getRow() + i, start.getColumn() + j);
+                var target = new ChessPosition(row + i, col + j);
                 if (validMove(board, color, target) != MoveStatus.BLOCKED) {
                     moves.add(new ChessMove(start, target, null));
                 }
@@ -104,9 +104,6 @@ class MoveHelpers {
     }
 
     public static List<ChessMove> knightMoves(ChessBoard board, ChessPosition start, TeamColor color) {
-        var row = start.getRow();
-        var col = start.getColumn();
-
         var positions = Stream.of(new IntPair(2, 1), new IntPair(1, 2))
             .flatMap(p -> Stream.of(p, new IntPair(-p.a(), p.b()))) // vertical symmetry
             .flatMap(p -> Stream.of(p, new IntPair(p.a(), -p.b()))) // horizontal symmetry
