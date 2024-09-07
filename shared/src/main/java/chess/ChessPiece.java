@@ -45,7 +45,7 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
             case QUEEN -> null;
             case BISHOP -> null;
             case KNIGHT -> helper.knightMoves();
-            case ROOK -> null;
+            case ROOK -> helper.rookMoves();
             case PAWN -> helper.pawnMoves();
         };
     }
@@ -141,5 +141,29 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
         } else {
             return Stream.of(new ChessMove(start, target, null));
         }
+    }
+
+    private Stream<ChessPosition> line(IntPair offset) {
+        Stream.Builder<ChessPosition> targets = Stream.builder();
+        for (int i = 1; true; i++) {
+            var target = start.add(offset.mult(i));
+            var status = checkTarget(target);
+            switch (status) {
+                case BLOCKED:
+                    return targets.build();
+                case CAPTURE:
+                    return targets.add(target).build();
+                case BLANK:
+                    targets.add(target);
+                    break;
+            }
+        }
+    }
+
+    public List<ChessMove> rookMoves() {
+        return Stream.of(new IntPair(1, 0), new IntPair(0, 1), new IntPair(-1, 0), new IntPair(0, -1))
+            .flatMap(this::line)
+            .map(p -> new ChessMove(start, p, null))
+            .toList();
     }
 }
