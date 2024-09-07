@@ -46,7 +46,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        this.pieces[position.getRow() - 1][position.getColumn() - 1] = piece;
+        this.pieces[position.row() - 1][position.col() - 1] = piece;
     }
 
     /**
@@ -57,7 +57,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return this.pieces[position.getRow() - 1][position.getColumn() - 1];
+        return this.pieces[position.row() - 1][position.col() - 1];
     }
 
     /**
@@ -96,7 +96,7 @@ public class ChessBoard {
     }
 
     public static boolean contains(ChessPosition position) {
-        return position.getRow() <= boardSize && position.getColumn() <= boardSize
-            && position.getRow() >= 1 && position.getColumn() >= 1;
+        return position.row() <= boardSize && position.col() <= boardSize
+            && position.row() >= 1 && position.col() >= 1;
     }
 }

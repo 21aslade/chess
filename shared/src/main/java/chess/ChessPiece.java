@@ -88,12 +88,10 @@ class MoveHelpers {
     }
 
     public static List<ChessMove> kingMoves(ChessBoard board, ChessPosition start, TeamColor color) {
-        var row = start.getRow();
-        var col = start.getColumn();
         var moves = new ArrayList<ChessMove>();
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                var target = new ChessPosition(row + i, col + j);
+                var target = new ChessPosition(start.row() + i, start.col() + j);
                 if (validMove(board, color, target) != MoveStatus.BLOCKED) {
                     moves.add(new ChessMove(start, target, null));
                 }
