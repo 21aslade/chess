@@ -96,6 +96,7 @@ public class ChessBoard {
     }
 
     public static boolean contains(ChessPosition position) {
-        return position.getRow() <= boardSize && position.getColumn() <= boardSize;
+        return position.getRow() <= boardSize && position.getColumn() <= boardSize
+            && position.getRow() >= 1 && position.getColumn() >= 1;
     }
 }
