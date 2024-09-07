@@ -94,4 +94,8 @@ public class ChessBoard {
             "pieces=" + Arrays.toString(pieces) +
             '}';
     }
+
+    public static boolean contains(ChessPosition position) {
+        return position.getRow() <= boardSize && position.getColumn() <= boardSize;
+    }
 }

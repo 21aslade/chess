@@ -2,8 +2,9 @@ package chess;
 
 import chess.ChessGame.TeamColor;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.List;
 
 /**
  * Represents a single chess piece
@@ -34,7 +35,14 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        return switch (this.type) {
+            case KING -> MoveHelpers.kingMoves(board, myPosition, this.pieceColor);
+            case QUEEN -> null;
+            case BISHOP -> null;
+            case KNIGHT -> null;
+            case ROOK -> null;
+            case PAWN -> null;
+        };
     }
 
     /**
@@ -47,5 +55,48 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
         KNIGHT,
         ROOK,
         PAWN
+    }
+}
+
+class MoveHelpers {
+    enum MoveStatus {
+        BLANK,
+        CAPTURE,
+        BLOCKED
+    }
+
+    private static MoveStatus validMove(
+        ChessBoard board,
+        TeamColor color,
+        ChessPosition target
+    ) {
+        if (!ChessBoard.contains(target)) {
+            return MoveStatus.BLOCKED;
+        }
+
+        var targetPiece = board.getPiece(target);
+        if (targetPiece == null) {
+            return MoveStatus.BLANK;
+        } else if (targetPiece.pieceColor() == color) {
+            return MoveStatus.BLOCKED;
+        } else {
+            return MoveStatus.CAPTURE;
+        }
+    }
+
+    public static List<ChessMove> kingMoves(ChessBoard board, ChessPosition start, TeamColor color) {
+        var row = start.getRow();
+        var col = start.getColumn();
+        var moves = new ArrayList<ChessMove>();
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                var target = new ChessPosition(start.getRow() + i, start.getColumn() + j);
+                if (validMove(board, color, target) != MoveStatus.BLOCKED) {
+                    moves.add(new ChessMove(start, target, null));
+                }
+            }
+        }
+
+        return moves;
     }
 }
