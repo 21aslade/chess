@@ -2,6 +2,8 @@ package chess;
 
 import java.util.Objects;
 
+import chess.Util.IntPair;
+
 /**
  * Represents a single square position on a chess board
  * <p>
@@ -45,5 +47,9 @@ public class ChessPosition {
             return false;
         }
         return row == that.row && col == that.col;
+    }
+
+    public ChessPosition add(IntPair offset) {
+        return new ChessPosition(this.row + offset.a(), this.col + offset.b());
     }
 }

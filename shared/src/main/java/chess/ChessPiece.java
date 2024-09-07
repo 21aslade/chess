@@ -5,6 +5,9 @@ import chess.ChessGame.TeamColor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
+
+import chess.Util.IntPair;
 
 /**
  * Represents a single chess piece
@@ -39,7 +42,7 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
             case KING -> MoveHelpers.kingMoves(board, myPosition, this.pieceColor);
             case QUEEN -> null;
             case BISHOP -> null;
-            case KNIGHT -> null;
+            case KNIGHT -> MoveHelpers.knightMoves(board, myPosition, this.pieceColor);
             case ROOK -> null;
             case PAWN -> null;
         };
@@ -98,5 +101,19 @@ class MoveHelpers {
         }
 
         return moves;
+    }
+
+    public static List<ChessMove> knightMoves(ChessBoard board, ChessPosition start, TeamColor color) {
+        var row = start.getRow();
+        var col = start.getColumn();
+
+        var positions = Stream.of(new IntPair(2, 1), new IntPair(1, 2))
+            .flatMap(p -> Stream.of(p, new IntPair(-p.a(), p.b()))) // vertical symmetry
+            .flatMap(p -> Stream.of(p, new IntPair(p.a(), -p.b()))) // horizontal symmetry
+            .map(start::add);
+
+        return positions.filter(p -> validMove(board, color, p) != MoveStatus.BLOCKED)
+            .map(p -> new ChessMove(start, p, null))
+            .toList();
     }
 }
