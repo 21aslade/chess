@@ -4,7 +4,6 @@ import chess.ChessGame.TeamColor;
 import chess.Util.IntPair;
 import chess.ChessPiece.PieceType;
 
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -22,13 +21,13 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
     }
 
     public Stream<ChessMove> rookMoves() {
-        return Stream.of(new IntPair(1, 0), new IntPair(0, 1), new IntPair(-1, 0), new IntPair(0, -1))
+        return Stream.of(IntPair.Up, IntPair.Down, IntPair.Left, IntPair.Right)
             .flatMap(this::rayCast)
             .map(p -> new ChessMove(start, p, null));
     }
 
     public Stream<ChessMove> bishopMoves() {
-        return Stream.of(new IntPair(1, 1), new IntPair(-1, 1), new IntPair(-1, -1), new IntPair(1, -1))
+        return Stream.of(IntPair.UpLeft, IntPair.UpRight, IntPair.DownLeft, IntPair.DownRight)
             .flatMap(this::rayCast)
             .map(p -> new ChessMove(start, p, null));
     }
@@ -64,15 +63,15 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
     public Stream<ChessMove> pawnMoves() {
         var promotionRow = color == TeamColor.WHITE ? ChessBoard.boardSize : 1;
         var startingRow = color == TeamColor.WHITE ? 2 : ChessBoard.boardSize - 1;
-        var direction = color == TeamColor.WHITE ? 1 : -1;
+        var forward = color == TeamColor.WHITE ? IntPair.Up : IntPair.Down;
 
-        var singleMove = start.add(new IntPair(direction, 0));
-        var doubleMove = start.row() == startingRow ? start.add(new IntPair(direction * 2, 0)) : null;
+        var singleMove = start.add(forward);
+        var doubleMove = start.row() == startingRow ? singleMove.add(forward) : null;
         var move = Stream.of(singleMove, doubleMove)
             .takeWhile(p -> p != null && checkTarget(p) == MoveStatus.BLANK);
 
-        var attack = IntStream.of(1, -1)
-            .mapToObj(i -> start.add(new IntPair(direction, i)))
+        var attack = Stream.of(IntPair.Left, IntPair.Right)
+            .map(side -> start.add(forward).add(side))
             .filter(p -> checkTarget(p) == MoveStatus.CAPTURE);
 
         return Stream.concat(move, attack)
