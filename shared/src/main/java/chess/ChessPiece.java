@@ -5,6 +5,7 @@ import chess.ChessGame.TeamColor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import chess.Util.IntPair;
@@ -45,7 +46,7 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
             case BISHOP -> null;
             case KNIGHT -> helper.knightMoves();
             case ROOK -> null;
-            case PAWN -> null;
+            case PAWN -> helper.pawnMoves();
         };
     }
 
@@ -107,5 +108,38 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
         return positions.filter(p -> checkTarget(p) != MoveStatus.BLOCKED)
             .map(p -> new ChessMove(start, p, null))
             .toList();
+    }
+
+    public List<ChessMove> pawnMoves() {
+        var promotionRow = color == TeamColor.WHITE ? ChessBoard.boardSize : 1;
+        var startingRow = color == TeamColor.WHITE ? 2 : ChessBoard.boardSize - 1;
+        var direction = color == TeamColor.WHITE ? 1 : -1;
+
+        var singleMove = start.add(new IntPair(direction, 0));
+        var doubleMove = start.row() == startingRow ? start.add(new IntPair(direction * 2, 0)) : null;
+        var move = Stream.of(singleMove, doubleMove)
+            .takeWhile(p -> p != null && checkTarget(p) == MoveStatus.BLANK);
+
+        var attack = IntStream.of(1, -1)
+            .mapToObj(i -> start.add(new IntPair(direction, i)))
+            .filter(p -> checkTarget(p) == MoveStatus.CAPTURE);
+
+        return Stream.concat(move, attack)
+            .flatMap(p -> moveOrPromote(p, promotionRow))
+            .toList();
+    }
+
+    private Stream<ChessMove> moveOrPromote(ChessPosition target, int promotionRow) {
+        if (target.row() == promotionRow) {
+            return Stream.of(
+                    ChessPiece.PieceType.QUEEN,
+                    ChessPiece.PieceType.ROOK,
+                    ChessPiece.PieceType.BISHOP,
+                    ChessPiece.PieceType.KNIGHT
+                )
+                .map(t -> new ChessMove(start, target, t));
+        } else {
+            return Stream.of(new ChessMove(start, target, null));
+        }
     }
 }
