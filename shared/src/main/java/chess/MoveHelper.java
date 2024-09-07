@@ -2,6 +2,7 @@ package chess;
 
 import chess.ChessGame.TeamColor;
 import chess.Util.IntPair;
+import chess.ChessPiece.PieceType;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -106,12 +107,7 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
      */
     private Stream<ChessMove> moveOrPromote(ChessPosition target, int promotionRow) {
         if (target.row() == promotionRow) {
-            return Stream.of(
-                    ChessPiece.PieceType.QUEEN,
-                    ChessPiece.PieceType.ROOK,
-                    ChessPiece.PieceType.BISHOP,
-                    ChessPiece.PieceType.KNIGHT
-                )
+            return Stream.of(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT)
                 .map(t -> new ChessMove(start, target, t));
         } else {
             return Stream.of(new ChessMove(start, target, null));
