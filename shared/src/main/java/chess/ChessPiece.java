@@ -38,11 +38,12 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        var helper = new MoveHelper(board, myPosition, this.pieceColor);
         return switch (this.type) {
-            case KING -> MoveHelpers.kingMoves(board, myPosition, this.pieceColor);
+            case KING -> helper.kingMoves();
             case QUEEN -> null;
             case BISHOP -> null;
-            case KNIGHT -> MoveHelpers.knightMoves(board, myPosition, this.pieceColor);
+            case KNIGHT -> helper.knightMoves();
             case ROOK -> null;
             case PAWN -> null;
         };
@@ -61,18 +62,14 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
     }
 }
 
-class MoveHelpers {
+record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
     enum MoveStatus {
         BLANK,
         CAPTURE,
         BLOCKED
     }
 
-    private static MoveStatus validMove(
-        ChessBoard board,
-        TeamColor color,
-        ChessPosition target
-    ) {
+    private MoveStatus checkTarget(ChessPosition target) {
         if (!ChessBoard.contains(target)) {
             return MoveStatus.BLOCKED;
         }
@@ -87,12 +84,12 @@ class MoveHelpers {
         }
     }
 
-    public static List<ChessMove> kingMoves(ChessBoard board, ChessPosition start, TeamColor color) {
+    public List<ChessMove> kingMoves() {
         var moves = new ArrayList<ChessMove>();
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 var target = new ChessPosition(start.row() + i, start.col() + j);
-                if (validMove(board, color, target) != MoveStatus.BLOCKED) {
+                if (checkTarget(target) != MoveStatus.BLOCKED) {
                     moves.add(new ChessMove(start, target, null));
                 }
             }
@@ -101,13 +98,13 @@ class MoveHelpers {
         return moves;
     }
 
-    public static List<ChessMove> knightMoves(ChessBoard board, ChessPosition start, TeamColor color) {
+    public List<ChessMove> knightMoves() {
         var positions = Stream.of(new IntPair(2, 1), new IntPair(1, 2))
             .flatMap(p -> Stream.of(p, new IntPair(-p.a(), p.b()))) // vertical symmetry
             .flatMap(p -> Stream.of(p, new IntPair(p.a(), -p.b()))) // horizontal symmetry
             .map(start::add);
 
-        return positions.filter(p -> validMove(board, color, p) != MoveStatus.BLOCKED)
+        return positions.filter(p -> checkTarget(p) != MoveStatus.BLOCKED)
             .map(p -> new ChessMove(start, p, null))
             .toList();
     }
