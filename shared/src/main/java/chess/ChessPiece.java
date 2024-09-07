@@ -43,7 +43,7 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
         return switch (this.type) {
             case KING -> helper.kingMoves();
             case QUEEN -> null;
-            case BISHOP -> null;
+            case BISHOP -> helper.bishopMoves();
             case KNIGHT -> helper.knightMoves();
             case ROOK -> helper.rookMoves();
             case PAWN -> helper.pawnMoves();
@@ -162,6 +162,13 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
 
     public List<ChessMove> rookMoves() {
         return Stream.of(new IntPair(1, 0), new IntPair(0, 1), new IntPair(-1, 0), new IntPair(0, -1))
+            .flatMap(this::line)
+            .map(p -> new ChessMove(start, p, null))
+            .toList();
+    }
+
+    public List<ChessMove> bishopMoves() {
+        return Stream.of(new IntPair(1, 1), new IntPair(-1, 1), new IntPair(-1, -1), new IntPair(1, -1))
             .flatMap(this::line)
             .map(p -> new ChessMove(start, p, null))
             .toList();
