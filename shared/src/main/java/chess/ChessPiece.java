@@ -2,9 +2,7 @@ package chess;
 
 import chess.ChessGame.TeamColor;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -40,14 +38,16 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         var helper = new MoveHelper(board, myPosition, this.pieceColor);
-        return switch (this.type) {
+        var moves = switch (this.type) {
             case KING -> helper.kingMoves();
-            case QUEEN -> null;
+            case QUEEN -> helper.queenMoves();
             case BISHOP -> helper.bishopMoves();
             case KNIGHT -> helper.knightMoves();
             case ROOK -> helper.rookMoves();
             case PAWN -> helper.pawnMoves();
         };
+
+        return moves.toList();
     }
 
     /**
@@ -85,8 +85,8 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
         }
     }
 
-    public List<ChessMove> kingMoves() {
-        var moves = new ArrayList<ChessMove>();
+    public Stream<ChessMove> kingMoves() {
+        Stream.Builder<ChessMove> moves = Stream.builder();
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 var target = new ChessPosition(start.row() + i, start.col() + j);
@@ -96,21 +96,20 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
             }
         }
 
-        return moves;
+        return moves.build();
     }
 
-    public List<ChessMove> knightMoves() {
+    public Stream<ChessMove> knightMoves() {
         var positions = Stream.of(new IntPair(2, 1), new IntPair(1, 2))
             .flatMap(p -> Stream.of(p, new IntPair(-p.a(), p.b()))) // vertical symmetry
             .flatMap(p -> Stream.of(p, new IntPair(p.a(), -p.b()))) // horizontal symmetry
             .map(start::add);
 
         return positions.filter(p -> checkTarget(p) != MoveStatus.BLOCKED)
-            .map(p -> new ChessMove(start, p, null))
-            .toList();
+            .map(p -> new ChessMove(start, p, null));
     }
 
-    public List<ChessMove> pawnMoves() {
+    public Stream<ChessMove> pawnMoves() {
         var promotionRow = color == TeamColor.WHITE ? ChessBoard.boardSize : 1;
         var startingRow = color == TeamColor.WHITE ? 2 : ChessBoard.boardSize - 1;
         var direction = color == TeamColor.WHITE ? 1 : -1;
@@ -125,8 +124,7 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
             .filter(p -> checkTarget(p) == MoveStatus.CAPTURE);
 
         return Stream.concat(move, attack)
-            .flatMap(p -> moveOrPromote(p, promotionRow))
-            .toList();
+            .flatMap(p -> moveOrPromote(p, promotionRow));
     }
 
     private Stream<ChessMove> moveOrPromote(ChessPosition target, int promotionRow) {
@@ -160,17 +158,19 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
         }
     }
 
-    public List<ChessMove> rookMoves() {
+    public Stream<ChessMove> rookMoves() {
         return Stream.of(new IntPair(1, 0), new IntPair(0, 1), new IntPair(-1, 0), new IntPair(0, -1))
             .flatMap(this::line)
-            .map(p -> new ChessMove(start, p, null))
-            .toList();
+            .map(p -> new ChessMove(start, p, null));
     }
 
-    public List<ChessMove> bishopMoves() {
+    public Stream<ChessMove> bishopMoves() {
         return Stream.of(new IntPair(1, 1), new IntPair(-1, 1), new IntPair(-1, -1), new IntPair(1, -1))
             .flatMap(this::line)
-            .map(p -> new ChessMove(start, p, null))
-            .toList();
+            .map(p -> new ChessMove(start, p, null));
+    }
+
+    public Stream<ChessMove> queenMoves() {
+        return Stream.concat(rookMoves(), bishopMoves());
     }
 }
