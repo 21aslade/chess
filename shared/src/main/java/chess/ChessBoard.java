@@ -16,8 +16,7 @@ public class ChessBoard {
     static final int boardSize = 8;
     private ChessPiece[][] pieces = new ChessPiece[boardSize][boardSize];
 
-    public ChessBoard() {
-    }
+    public ChessBoard() {}
 
     private static ChessPiece[] pawnRow(TeamColor color) {
         var row = new ChessPiece[boardSize];
