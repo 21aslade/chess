@@ -1,5 +1,7 @@
 package chess;
 
+import chess.ChessPiece.PieceType;
+
 import java.util.Collection;
 import java.util.stream.Stream;
 
@@ -12,10 +14,13 @@ import java.util.stream.Stream;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor turn = TeamColor.WHITE;
+    private ChessPosition whiteKingPosition;
+    private ChessPosition blackKingPosition;
 
     public ChessGame() {
-        this.board = new ChessBoard();
-        this.board.resetBoard();
+        var board = new ChessBoard();
+        board.resetBoard();
+        this.setBoard(board);
     }
 
     /**
@@ -62,7 +67,12 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        var kingPosition = teamColor == TeamColor.WHITE ? this.whiteKingPosition : this.blackKingPosition;
+        if (kingPosition == null) {
+            return false;
+        }
+
+        return this.board.isTargeted(kingPosition, teamColor);
     }
 
     /**
@@ -102,6 +112,12 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board = board;
+        this.whiteKingPosition =
+            board.piecePositions(p -> p.type() == PieceType.KING && p.pieceColor() == TeamColor.WHITE)
+                .findAny().orElse(null);
+        this.blackKingPosition =
+            board.piecePositions(p -> p.type() == PieceType.KING && p.pieceColor() == TeamColor.BLACK)
+                .findAny().orElse(null);
     }
 
     /**

@@ -5,6 +5,7 @@ import chess.ChessPiece.PieceType;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -97,11 +98,37 @@ public class ChessBoard {
         return this.getPiece(pos).moveStream(this, pos);
     }
 
-    public Stream<ChessPosition> piecePositions(TeamColor team) {
+    public Stream<ChessPosition> piecePositions(Predicate<ChessPiece> pred) {
         return IntStream.range(1, ChessBoard.boardSize + 1)
             .mapToObj(a -> IntStream.range(1, ChessBoard.boardSize + 1).mapToObj(b -> new ChessPosition(a, b)))
             .flatMap(i -> i)
-            .filter(p -> this.getPiece(p).pieceColor() == team);
+            .filter(p -> {
+                var piece = this.getPiece(p);
+                return piece != null && pred.test(piece);
+            });
+    }
+
+    public boolean isTargeted(ChessPosition pos, TeamColor team) {
+        var moveHelper = new MoveHelper(this, pos, team);
+        var pawn = moveHelper.pawnMoves()
+            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
+            .filter(p -> p.type() == PieceType.PAWN);
+
+        var rook = moveHelper.rookMoves()
+            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
+            .filter(p -> p.type() == PieceType.ROOK || p.type() == PieceType.QUEEN);
+
+        var bishop = moveHelper.bishopMoves()
+            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
+            .filter(p -> p.type() == PieceType.BISHOP || p.type() == PieceType.QUEEN);
+
+        var knight = moveHelper.knightMoves()
+            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
+            .filter(p -> p.type() == PieceType.KNIGHT);
+
+        return Stream.of(pawn, rook, bishop, knight)
+            .flatMap(i -> i)
+            .findAny().isPresent();
     }
 
     /**
