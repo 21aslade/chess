@@ -101,7 +101,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return this.isInCheck(teamColor) && !this.canMove(teamColor);
     }
 
     /**
@@ -112,7 +112,12 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return !this.isInCheck(teamColor) && !this.canMove(teamColor);
+    }
+
+    private boolean canMove(TeamColor team) {
+        return this.board.piecePositions(p -> p.pieceColor() == team)
+            .flatMap(this::validMovesStream).findAny().isPresent();
     }
 
     /**
