@@ -76,7 +76,26 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        var piece = this.board.getPiece(move.startPosition());
+        if (piece == null || this.turn != piece.pieceColor()) {
+            throw new InvalidMoveException();
+        }
+
+        var valid = this.validMovesStream(move.startPosition())
+            .anyMatch(move::equals);
+        if (!valid) {
+            throw new InvalidMoveException();
+        }
+
+        this.board.makeMove(move);
+
+        if (move.startPosition().equals(this.whiteKingPosition)) {
+            this.whiteKingPosition = move.endPosition();
+        } else if (move.startPosition().equals(this.blackKingPosition)) {
+            this.blackKingPosition = move.endPosition();
+        }
+
+        this.turn = this.turn.opposite();
     }
 
     /**

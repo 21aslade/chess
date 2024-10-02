@@ -67,10 +67,9 @@ public class ChessBoard implements ImmutableBoard {
      * Make the given move, only checking that the start position has a piece and the end position is on the board.
      *
      * @param move the move to make
-     * @return The piece that was captured by the moving piece, if any.
      * @throws InvalidMoveException If the start or end position of the move is off the board, or if there is no piece at the start position
      */
-    public ChessPiece movePiece(ChessMove move) throws InvalidMoveException {
+    public void makeMove(ChessMove move) throws InvalidMoveException {
         var start = move.startPosition();
         var end = move.endPosition();
 
@@ -85,14 +84,11 @@ public class ChessBoard implements ImmutableBoard {
 
         this.pieces[start.row() - 1][start.col() - 1] = null;
 
-        var captured = this.getPiece(end);
         if (move.promotionPiece() == null) {
             this.pieces[end.row() - 1][end.col() - 1] = moved;
         } else {
-            this.pieces[end.row() - 1][end.col() - 1] = new ChessPiece(moved.pieceColor(), moved.type());
+            this.pieces[end.row() - 1][end.col() - 1] = new ChessPiece(moved.pieceColor(), move.promotionPiece());
         }
-
-        return captured;
     }
 
     public Stream<ChessMove> movesFrom(ChessPosition pos) {
