@@ -39,14 +39,7 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
 
     public Stream<ChessMove> moveStream(ChessBoard board, ChessPosition myPosition) {
         var helper = new MoveHelper(board, myPosition, this.pieceColor);
-        return switch (this.type) {
-            case KING -> helper.kingMoves();
-            case QUEEN -> helper.queenMoves();
-            case BISHOP -> helper.bishopMoves();
-            case KNIGHT -> helper.knightMoves();
-            case ROOK -> helper.rookMoves();
-            case PAWN -> helper.pawnMoves();
-        };
+        return helper.moves(this.type);
     }
 
     /**

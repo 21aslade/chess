@@ -20,6 +20,35 @@ record MoveHelper(ImmutableBoard board, ChessPosition start, TeamColor color) {
         BLOCKED
     }
 
+    public Stream<ChessMove> moves(PieceType type) {
+        return switch (type) {
+            case KING -> this.kingMoves();
+            case QUEEN -> this.queenMoves();
+            case BISHOP -> this.bishopMoves();
+            case KNIGHT -> this.knightMoves();
+            case ROOK -> this.rookMoves();
+            case PAWN -> this.pawnMoves();
+        };
+    }
+
+    /**
+     * Returns true if this.start is targeted by a piece of the given type.
+     * For convenience, if the desired type is ROOK or BISHOP, QUEENs will be included as well.
+     *
+     * @param type the type of piece to check for
+     * @return true if any piece of that type is targeting this.start
+     */
+    public boolean targetedBy(PieceType type) {
+        var includeQueen = type == PieceType.ROOK || type == PieceType.BISHOP;
+        // This works because all moves in chess are symmetric
+        // if piece A threatens piece B, and piece A and piece B are the same type, then piece B threatens piece A
+        return this.moves(type)
+            .anyMatch(m -> {
+                var piece = this.board.getPiece(m.endPosition());
+                return piece != null && (piece.type() == type || (includeQueen && piece.type() == PieceType.QUEEN));
+            });
+    }
+
     public Stream<ChessMove> rookMoves() {
         return Stream.of(IntPair.Up, IntPair.Down, IntPair.Left, IntPair.Right)
             .flatMap(this::rayCast)
