@@ -9,7 +9,8 @@ public interface ImmutableBoard {
 
     boolean contains(ChessPosition position);
 
-    default boolean isTargeted(ChessPosition pos, ChessGame.TeamColor team) {
+    default boolean isTargeted(ChessPosition pos) {
+        var team = this.getPiece(pos).pieceColor();
         var moveHelper = new MoveHelper(this, pos, team);
 
         var king = moveHelper.kingMoves()

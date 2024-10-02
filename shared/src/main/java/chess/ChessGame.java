@@ -47,7 +47,26 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        return this.validMovesStream(startPosition).toList();
+    }
+
+    public Stream<ChessMove> validMovesStream(ChessPosition pos) {
+        var piece = this.board.getPiece(pos);
+        if (piece == null) {
+            return null;
+        }
+
+        var kingPos = piece.pieceColor() == TeamColor.WHITE ? this.whiteKingPosition : this.blackKingPosition;
+        if (kingPos == null) {
+            return this.board.movesFrom(pos);
+        }
+
+        return this.board.movesFrom(pos)
+            .filter(move -> {
+                var board = new PotentialBoard(this.board, move, null);
+                var target = move.startPosition().equals(kingPos) ? move.endPosition() : kingPos;
+                return !board.isTargeted(target);
+            });
     }
 
     /**
@@ -72,7 +91,7 @@ public class ChessGame {
             return false;
         }
 
-        return this.board.isTargeted(kingPosition, teamColor);
+        return this.board.isTargeted(kingPosition);
     }
 
     /**
