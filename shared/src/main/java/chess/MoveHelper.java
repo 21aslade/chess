@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  * @param start The location of the piece to check
  * @param color The color of the piece to check
  */
-record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
+record MoveHelper(ImmutableBoard board, ChessPosition start, TeamColor color) {
     enum MoveStatus {
         BLANK,
         CAPTURE,
@@ -87,7 +87,7 @@ record MoveHelper(ChessBoard board, ChessPosition start, TeamColor color) {
      * </ul>
      */
     private MoveStatus checkTarget(ChessPosition target) {
-        if (!ChessBoard.contains(target)) {
+        if (!board.contains(target)) {
             return MoveStatus.BLOCKED;
         }
 

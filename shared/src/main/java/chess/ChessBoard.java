@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements ImmutableBoard {
     static final int boardSize = 8;
     private ChessPiece[][] pieces = new ChessPiece[boardSize][boardSize];
 
@@ -58,6 +58,7 @@ public class ChessBoard {
      * @return Either the piece at the position, or null if no piece is at that
      * position
      */
+    @Override
     public ChessPiece getPiece(ChessPosition position) {
         return this.pieces[position.row() - 1][position.col() - 1];
     }
@@ -73,7 +74,7 @@ public class ChessBoard {
         var start = move.startPosition();
         var end = move.endPosition();
 
-        if (!ChessBoard.contains(start) || !ChessBoard.contains(end)) {
+        if (!this.contains(start) || !this.contains(end)) {
             throw new InvalidMoveException();
         }
 
@@ -106,29 +107,6 @@ public class ChessBoard {
                 var piece = this.getPiece(p);
                 return piece != null && pred.test(piece);
             });
-    }
-
-    public boolean isTargeted(ChessPosition pos, TeamColor team) {
-        var moveHelper = new MoveHelper(this, pos, team);
-        var pawn = moveHelper.pawnMoves()
-            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
-            .filter(p -> p.type() == PieceType.PAWN);
-
-        var rook = moveHelper.rookMoves()
-            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
-            .filter(p -> p.type() == PieceType.ROOK || p.type() == PieceType.QUEEN);
-
-        var bishop = moveHelper.bishopMoves()
-            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
-            .filter(p -> p.type() == PieceType.BISHOP || p.type() == PieceType.QUEEN);
-
-        var knight = moveHelper.knightMoves()
-            .flatMap(m -> Stream.ofNullable(this.getPiece(m.endPosition())))
-            .filter(p -> p.type() == PieceType.KNIGHT);
-
-        return Stream.of(pawn, rook, bishop, knight)
-            .flatMap(i -> i)
-            .findAny().isPresent();
     }
 
     /**
@@ -166,7 +144,8 @@ public class ChessBoard {
             '}';
     }
 
-    public static boolean contains(ChessPosition position) {
+    @Override
+    public boolean contains(ChessPosition position) {
         return position.row() <= boardSize && position.col() <= boardSize
             && position.row() >= 1 && position.col() >= 1;
     }
