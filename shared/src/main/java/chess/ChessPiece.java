@@ -3,6 +3,7 @@ package chess;
 import chess.ChessGame.TeamColor;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * Represents a single chess piece
@@ -33,8 +34,12 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        return this.moveStream(board, myPosition).toList();
+    }
+
+    public Stream<ChessMove> moveStream(ChessBoard board, ChessPosition myPosition) {
         var helper = new MoveHelper(board, myPosition, this.pieceColor);
-        var moves = switch (this.type) {
+        return switch (this.type) {
             case KING -> helper.kingMoves();
             case QUEEN -> helper.queenMoves();
             case BISHOP -> helper.bishopMoves();
@@ -42,8 +47,6 @@ public record ChessPiece(TeamColor pieceColor, PieceType type) {
             case ROOK -> helper.rookMoves();
             case PAWN -> helper.pawnMoves();
         };
-
-        return moves.toList();
     }
 
     /**

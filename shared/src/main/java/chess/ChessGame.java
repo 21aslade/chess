@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -108,6 +109,13 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK;
+
+        public TeamColor opposite() {
+            return switch (this) {
+                case WHITE -> TeamColor.BLACK;
+                case BLACK -> TeamColor.WHITE;
+            };
+        }
     }
 }

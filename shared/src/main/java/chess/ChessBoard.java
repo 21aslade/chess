@@ -5,6 +5,8 @@ import chess.ChessPiece.PieceType;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -89,6 +91,17 @@ public class ChessBoard {
         }
 
         return captured;
+    }
+
+    public Stream<ChessMove> movesFrom(ChessPosition pos) {
+        return this.getPiece(pos).moveStream(this, pos);
+    }
+
+    public Stream<ChessPosition> piecePositions(TeamColor team) {
+        return IntStream.range(1, ChessBoard.boardSize + 1)
+            .mapToObj(a -> IntStream.range(1, ChessBoard.boardSize + 1).mapToObj(b -> new ChessPosition(a, b)))
+            .flatMap(i -> i)
+            .filter(p -> this.getPiece(p).pieceColor() == team);
     }
 
     /**
