@@ -15,6 +15,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTests {
+    UserData user1 = new UserData("strength", "weakness", "journey@destination.com");
+    UserData user2 = new UserData("favorite_color", "yellow", "bridge@death.com");
+    String gameName = "game";
+
     MemoryDataAccess dataAccess = new MemoryDataAccess();
 
     @BeforeEach
@@ -26,51 +30,45 @@ public class ServiceTests {
 
     @Test
     public void registerUserSuccess() throws DataAccessException, ServiceException {
-        var user = new UserData("strength", "weakness", "journey@destination.com");
-        var authData = Service.registerUser(user, dataAccess);
-        assertEquals(user.username(), authData.username());
+        var authData = Service.registerUser(user1, dataAccess);
+        assertEquals(user1.username(), authData.username());
     }
 
     @Test
     public void registerUserExisting() throws DataAccessException, ServiceException {
-        var user1 = new UserData("strength", "weakness", "journey@destination.com");
         Service.registerUser(user1, dataAccess);
 
-        var user2 = new UserData("strength", "in", "numbers@hotmail.com");
-        var error = assertThrows(ServiceException.class, () -> Service.registerUser(user2, dataAccess));
+        var sameUsername = new UserData(user1.username(), "in", "numbers@hotmail.com");
+        var error = assertThrows(ServiceException.class, () -> Service.registerUser(sameUsername, dataAccess));
         assertEquals(ErrorKind.AlreadyExists, error.kind());
     }
 
     @Test
     public void loginSuccess() throws DataAccessException, ServiceException {
-        var user = new UserData("strength", "weakness", "journey@destination.com");
-        var auth1 = Service.registerUser(user, dataAccess);
-
-        var auth2 = Service.login(user.username(), user.password(), dataAccess);
-        assertEquals(user.username(), auth2.username());
+        var auth1 = Service.registerUser(user1, dataAccess);
+        var auth2 = Service.login(user1.username(), user1.password(), dataAccess);
+        var auth3 = Service.login(user1.username(), user1.password(), dataAccess);
+        assertEquals(user1.username(), auth2.username());
         assertNotEquals(auth1.authToken(), auth2.authToken());
+        assertNotEquals(auth2.authToken(), auth3.authToken());
     }
 
     @Test
     public void loginNonexistent() {
-        var user = new UserData("hippie", "dippy", "baloney@badcop.com");
         var error =
-            assertThrows(ServiceException.class, () -> Service.login(user.username(), user.password(), dataAccess));
+            assertThrows(ServiceException.class, () -> Service.login(user1.username(), user1.password(), dataAccess));
         assertEquals(ErrorKind.DoesNotExist, error.kind());
     }
 
     @Test
     public void loginWrongPassword() throws ServiceException, DataAccessException {
-        var user = new UserData("favorite_color", "yellow", "bridge@death.com");
-        Service.registerUser(user, dataAccess);
-
-        assertThrows(ServiceException.class, () -> Service.login(user.username(), "blue", dataAccess));
+        Service.registerUser(user2, dataAccess);
+        assertThrows(ServiceException.class, () -> Service.login(user2.username(), "blue", dataAccess));
     }
 
     @Test
     public void logoutSuccess() throws ServiceException, DataAccessException {
-        var user = new UserData("strength", "weakness", "journey@destination.com");
-        var auth = Service.registerUser(user, dataAccess);
+        var auth = Service.registerUser(user1, dataAccess);
 
         Service.logout(auth.authToken(), dataAccess);
     }
@@ -83,9 +81,7 @@ public class ServiceTests {
 
     @Test
     public void createGameSuccess() throws ServiceException, DataAccessException {
-        var user = new UserData("strength", "weakness", "journey@destination.com");
-        var auth = Service.registerUser(user, dataAccess);
-        var gameName = "game";
+        var auth = Service.registerUser(user1, dataAccess);
         var game1 = Service.createGame(gameName, auth.authToken(), dataAccess);
         var game2 = Service.createGame(gameName, auth.authToken(), dataAccess);
 
@@ -102,8 +98,7 @@ public class ServiceTests {
 
     @Test
     public void listGamesSuccess() throws ServiceException, DataAccessException {
-        var user = new UserData("strength", "weakness", "journey@destination.com");
-        var auth = Service.registerUser(user, dataAccess);
+        var auth = Service.registerUser(user1, dataAccess);
         var gameName = "game";
         var game1 = Service.createGame(gameName, auth.authToken(), dataAccess);
         var game2 = Service.createGame(gameName, auth.authToken(), dataAccess);
@@ -120,8 +115,6 @@ public class ServiceTests {
 
     @Test
     public void joinGameSuccess() throws ServiceException, DataAccessException {
-        var user1 = new UserData("strength", "weakness", "journey@destination.com");
-        var user2 = new UserData("favorite_color", "yellow", "bridge@death.com");
         var auth1 = Service.registerUser(user1, dataAccess);
         var auth2 = Service.registerUser(user2, dataAccess);
         var gameName = "game";
@@ -144,8 +137,7 @@ public class ServiceTests {
 
     @Test
     public void joinGameNonexistent() throws ServiceException, DataAccessException {
-        var user = new UserData("strength", "weakness", "journey@destination.com");
-        var auth = Service.registerUser(user, dataAccess);
+        var auth = Service.registerUser(user1, dataAccess);
 
         var error = assertThrows(
             ServiceException.class,
@@ -157,8 +149,6 @@ public class ServiceTests {
 
     @Test
     public void joinGameAlreadyTaken() throws ServiceException, DataAccessException {
-        var user1 = new UserData("strength", "weakness", "journey@destination.com");
-        var user2 = new UserData("favorite_color", "yellow", "bridge@death.com");
         var auth1 = Service.registerUser(user1, dataAccess);
         var auth2 = Service.registerUser(user2, dataAccess);
         var gameName = "game";
