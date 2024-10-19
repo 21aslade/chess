@@ -34,6 +34,13 @@ public class Service {
         return createSession(username, data);
     }
 
+    public static void logout(String authToken, DataAccess data) throws DataAccessException, ServiceException {
+        if (data.getAuth(authToken) == null) {
+            throw new ServiceException(ServiceException.ErrorKind.DoesNotExist);
+        }
+        data.deleteAuth(authToken);
+    }
+
     private static AuthData createSession(String username, DataAccess data) throws DataAccessException {
         var uuid = UUID.randomUUID().toString();
         var authData = new AuthData(uuid, username);

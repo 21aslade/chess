@@ -27,7 +27,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void registerUserFailure() throws DataAccessException, ServiceException {
+    public void registerUserExisting() throws DataAccessException, ServiceException {
         var user = new UserData("strength", "weakness", "journey@destination.com");
         Service.registerUser(user, dataAccess);
 
@@ -60,5 +60,19 @@ public class ServiceTests {
         Service.registerUser(user, dataAccess);
 
         assertThrows(ServiceException.class, () -> Service.login(user.username(), "blue", dataAccess));
+    }
+
+    @Test
+    public void logoutSuccess() throws ServiceException, DataAccessException {
+        var user = new UserData("strength", "weakness", "journey@destination.com");
+        var auth1 = Service.registerUser(user, dataAccess);
+
+        Service.logout(auth1.authToken(), dataAccess);
+    }
+
+    @Test
+    public void logoutNonexistent() {
+        var error = assertThrows(ServiceException.class, () -> Service.logout("nope way", dataAccess));
+        assertEquals(ServiceException.ErrorKind.DoesNotExist, error.kind());
     }
 }
