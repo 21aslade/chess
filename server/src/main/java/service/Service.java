@@ -28,11 +28,7 @@ public class Service {
         DataAccessException,
         ServiceException {
         var dbUser = data.getUser(username);
-        if (dbUser == null) {
-            throw new ServiceException(ErrorKind.DoesNotExist);
-        }
-
-        if (!dbUser.password().equals(password)) {
+        if (dbUser == null || !dbUser.password().equals(password)) {
             throw new ServiceException(ErrorKind.Unauthorized);
         }
 
@@ -40,18 +36,14 @@ public class Service {
     }
 
     public static void logout(String authToken, DataAccess data) throws DataAccessException, ServiceException {
-        if (data.getAuth(authToken) == null) {
-            throw new ServiceException(ErrorKind.DoesNotExist);
-        }
+        Service.verifyAuth(authToken, data);
         data.deleteAuth(authToken);
     }
 
     public static GameData createGame(String gameName, String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
-        if (data.getAuth(authToken) == null) {
-            throw new ServiceException(ErrorKind.Unauthorized);
-        }
+        Service.verifyAuth(authToken, data);
 
         var gameId = data.gameCount();
         var game = new GameData(gameId, null, null, gameName, new ChessGame());
@@ -63,19 +55,14 @@ public class Service {
     public static List<GameData> listGames(String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
-        if (data.getAuth(authToken) == null) {
-            throw new ServiceException(ErrorKind.Unauthorized);
-        }
+        Service.verifyAuth(authToken, data);
         return data.getGames();
     }
 
     public static void joinGame(int gameId, TeamColor team, String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
-        var auth = data.getAuth(authToken);
-        if (auth == null) {
-            throw new ServiceException(ErrorKind.Unauthorized);
-        }
+        var auth = Service.verifyAuth(authToken, data);
 
         var game = data.getGame(gameId);
         if (game == null) {
@@ -98,6 +85,15 @@ public class Service {
         }
 
         data.putGame(game.withUser(team, auth.username()));
+    }
+
+    private static AuthData verifyAuth(String authToken, DataAccess data) throws ServiceException, DataAccessException {
+        var auth = data.getAuth(authToken);
+        if (auth == null) {
+            throw new ServiceException(ErrorKind.Unauthorized);
+        }
+
+        return auth;
     }
 
     private static AuthData createSession(String username, DataAccess data) throws DataAccessException {
