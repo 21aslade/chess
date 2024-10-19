@@ -151,7 +151,6 @@ public class ServiceTests {
     public void joinGameAlreadyTaken() throws ServiceException, DataAccessException {
         var auth1 = Service.registerUser(user1, dataAccess);
         var auth2 = Service.registerUser(user2, dataAccess);
-        var gameName = "game";
         var game = Service.createGame(gameName, auth1.authToken(), dataAccess);
 
         Service.joinGame(game.gameId(), TeamColor.WHITE, auth1.authToken(), dataAccess);
@@ -162,5 +161,24 @@ public class ServiceTests {
         );
 
         assertEquals(ErrorKind.AlreadyExists, error.kind());
+    }
+
+    @Test
+    public void clear() throws DataAccessException, ServiceException {
+        var auth1 = Service.registerUser(user1, dataAccess);
+        Service.createGame(gameName, auth1.authToken(), dataAccess);
+
+        Service.clear(dataAccess);
+
+        var loginError =
+            assertThrows(ServiceException.class, () -> Service.login(user1.username(), user1.password(), dataAccess));
+        assertEquals(ErrorKind.Unauthorized, loginError.kind());
+
+        var logoutError = assertThrows(ServiceException.class, () -> Service.logout(auth1.authToken(), dataAccess));
+        assertEquals(ErrorKind.Unauthorized, logoutError.kind());
+
+        var auth2 = Service.registerUser(user2, dataAccess);
+        var games = Service.listGames(auth2.authToken(), dataAccess);
+        assertEquals(0, games.size());
     }
 }

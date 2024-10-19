@@ -87,6 +87,12 @@ public class Service {
         data.putGame(game.withUser(team, auth.username()));
     }
 
+    public static void clear(DataAccess data) throws DataAccessException {
+        data.clearUsers();
+        data.clearAuth();
+        data.clearGames();
+    }
+
     private static AuthData verifyAuth(String authToken, DataAccess data) throws ServiceException, DataAccessException {
         var auth = data.getAuth(authToken);
         if (auth == null) {
