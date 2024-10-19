@@ -3,6 +3,7 @@ package chess;
 import chess.ChessPiece.PieceType;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -161,6 +162,21 @@ public class ChessGame {
         this.blackKingPosition =
             board.piecePositions(p -> p.type() == PieceType.KING && p.pieceColor() == TeamColor.BLACK)
                 .findAny().orElse(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (!(o instanceof final ChessGame chessGame)) { return false; }
+        return Objects.equals(board, chessGame.board) &&
+            turn == chessGame.turn &&
+            Objects.equals(whiteKingPosition, chessGame.whiteKingPosition) &&
+            Objects.equals(blackKingPosition, chessGame.blackKingPosition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(board, turn, whiteKingPosition, blackKingPosition);
     }
 
     /**

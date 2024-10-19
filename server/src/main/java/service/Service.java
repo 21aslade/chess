@@ -1,10 +1,13 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 
+import java.util.List;
 import java.util.UUID;
 
 public class Service {
@@ -39,6 +42,20 @@ public class Service {
             throw new ServiceException(ServiceException.ErrorKind.DoesNotExist);
         }
         data.deleteAuth(authToken);
+    }
+
+    public static GameData createGame(String gameName, String authToken, DataAccess data) throws
+        DataAccessException,
+        ServiceException {
+        if (data.getAuth(authToken) == null) {
+            throw new ServiceException(ServiceException.ErrorKind.AuthenticationFailure);
+        }
+
+        var gameId = data.gameCount();
+        var game = new GameData(gameId, null, null, gameName, new ChessGame());
+        data.putGame(game);
+
+        return game;
     }
 
     private static AuthData createSession(String username, DataAccess data) throws DataAccessException {

@@ -1,8 +1,9 @@
 package service;
 
-import dataaccess.DataAccess;
+import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,5 +75,24 @@ public class ServiceTests {
     public void logoutNonexistent() {
         var error = assertThrows(ServiceException.class, () -> Service.logout("nope way", dataAccess));
         assertEquals(ServiceException.ErrorKind.DoesNotExist, error.kind());
+    }
+
+    @Test
+    public void createGameSuccess() throws ServiceException, DataAccessException {
+        var user = new UserData("strength", "weakness", "journey@destination.com");
+        var auth1 = Service.registerUser(user, dataAccess);
+        var gameName = "game";
+        var game1 = Service.createGame(gameName, auth1.authToken(), dataAccess);
+        var game2 = Service.createGame(gameName, auth1.authToken(), dataAccess);
+
+        var expected1 = new GameData(game1.gameId(), null, null, gameName, new ChessGame());
+        assertEquals(expected1, game1);
+        assertNotEquals(game1.gameId(), game2.gameId());
+    }
+
+    @Test
+    public void createGameUnauthorized() {
+        var error = assertThrows(ServiceException.class, () -> Service.createGame("game", "no chance", dataAccess));
+        assertEquals(ServiceException.ErrorKind.AuthenticationFailure, error.kind());
     }
 }
