@@ -16,12 +16,27 @@ public class Service {
 
         data.putUser(user);
 
-        return createSession(user, data);
+        return createSession(user.username(), data);
     }
 
-    private static AuthData createSession(UserData user, DataAccess data) throws DataAccessException {
+    public static AuthData login(String username, String password, DataAccess data) throws
+        DataAccessException,
+        ServiceException {
+        var dbUser = data.getUser(username);
+        if (dbUser == null) {
+            throw new ServiceException(ServiceException.ErrorKind.DoesNotExist);
+        }
+
+        if (!dbUser.password().equals(password)) {
+            throw new ServiceException(ServiceException.ErrorKind.AuthenticationFailure);
+        }
+
+        return createSession(username, data);
+    }
+
+    private static AuthData createSession(String username, DataAccess data) throws DataAccessException {
         var uuid = UUID.randomUUID().toString();
-        var authData = new AuthData(uuid, user.username());
+        var authData = new AuthData(uuid, username);
         data.putAuth(authData);
 
         return authData;

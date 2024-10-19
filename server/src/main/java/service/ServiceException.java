@@ -4,7 +4,9 @@ public class ServiceException extends Exception {
     private final ErrorKind kind;
 
     public enum ErrorKind {
-        AlreadyExists
+        AlreadyExists,
+        DoesNotExist,
+        AuthenticationFailure
     }
 
     public ServiceException(ErrorKind kind) {
