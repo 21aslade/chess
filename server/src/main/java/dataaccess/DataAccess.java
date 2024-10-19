@@ -18,6 +18,8 @@ public interface DataAccess {
 
     int gameCount() throws DataAccessException;
 
+    GameData getGame(int gameId) throws DataAccessException;
+    
     List<GameData> getGames() throws DataAccessException;
 
     void clearGames() throws DataAccessException;
