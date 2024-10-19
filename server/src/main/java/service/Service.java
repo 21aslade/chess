@@ -58,6 +58,15 @@ public class Service {
         return game;
     }
 
+    public static List<GameData> listGames(String authToken, DataAccess data) throws
+        DataAccessException,
+        ServiceException {
+        if (data.getAuth(authToken) == null) {
+            throw new ServiceException(ServiceException.ErrorKind.AuthenticationFailure);
+        }
+        return data.getGames();
+    }
+
     private static AuthData createSession(String username, DataAccess data) throws DataAccessException {
         var uuid = UUID.randomUUID().toString();
         var authData = new AuthData(uuid, username);

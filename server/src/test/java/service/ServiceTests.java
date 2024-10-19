@@ -8,6 +8,8 @@ import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTests {
@@ -93,6 +95,24 @@ public class ServiceTests {
     @Test
     public void createGameUnauthorized() {
         var error = assertThrows(ServiceException.class, () -> Service.createGame("game", "no chance", dataAccess));
+        assertEquals(ServiceException.ErrorKind.AuthenticationFailure, error.kind());
+    }
+
+    @Test
+    public void listGamesSuccess() throws ServiceException, DataAccessException {
+        var user = new UserData("strength", "weakness", "journey@destination.com");
+        var auth1 = Service.registerUser(user, dataAccess);
+        var gameName = "game";
+        var game1 = Service.createGame(gameName, auth1.authToken(), dataAccess);
+        var game2 = Service.createGame(gameName, auth1.authToken(), dataAccess);
+
+        var actual = Service.listGames(auth1.authToken(), dataAccess);
+        assertEquals(List.of(game1, game2), actual);
+    }
+
+    @Test
+    public void listGamesUnauthorized() {
+        var error = assertThrows(ServiceException.class, () -> Service.listGames("nah", dataAccess));
         assertEquals(ServiceException.ErrorKind.AuthenticationFailure, error.kind());
     }
 }
