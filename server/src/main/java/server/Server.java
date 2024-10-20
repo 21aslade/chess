@@ -42,17 +42,16 @@ public class Server {
         res.body(ex.toJson());
     }
 
-    private <T> T tryFromJson(String json, Class<T> classOfT) throws ResponseException {
+    private <T> String route(Request req, Response res, Class<T> body, HandlerFunction<T> callback) throws
+        ResponseException {
+        res.type("application/json");
         try {
-            return gson.fromJson(json, classOfT);
+            var request = body != null ? gson.fromJson(req.body(), body) : null;
+            var authToken = req.headers("authorization");
+            res.status(200);
+            return callback.run(authToken, request);
         } catch (JsonSyntaxException e) {
             throw new ResponseException(400, "Error: bad request");
-        }
-    }
-
-    private static <T> T tryRun(ServerFunction<T> callback) throws ResponseException {
-        try {
-            return callback.run();
         } catch (DataAccessException e) {
             throw new ResponseException(500, "Error: " + e.getMessage());
         } catch (ServiceException e) {
@@ -65,79 +64,55 @@ public class Server {
     }
 
     private Object register(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        var user = tryFromJson(req.body(), UserData.class);
-        var authData = Server.tryRun(() -> Service.registerUser(user, data));
-
-        res.status(200);
-        return gson.toJson(authData);
+        return route(req, res, UserData.class, (_auth, user) -> {
+            var authData = Service.registerUser(user, data);
+            return gson.toJson(authData);
+        });
     }
 
     private Object login(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        var request = tryFromJson(req.body(), LoginRequest.class);
-        var authData = Server.tryRun(() -> Service.login(request.username(), request.password(), data));
-
-        res.status(200);
-        return gson.toJson(authData);
+        return route(req, res, LoginRequest.class, (_auth, request) -> {
+            var authData = Service.login(request.username(), request.password(), data);
+            return gson.toJson(authData);
+        });
     }
 
     private Object logout(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        var authToken = req.headers("authorization");
-        Server.tryRun(() -> {
-            Service.logout(authToken, data);
-            return false; // Dummy return so the interface works :(
+        return route(req, res, null, (auth, _request) -> {
+            Service.logout(auth, data);
+            return "{}";
         });
-
-        res.status(200);
-        return "{}";
     }
 
     private Object createGame(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        var request = tryFromJson(req.body(), CreateGameRequest.class);
-        var authToken = req.headers("authorization");
-        var game = Server.tryRun(() -> Service.createGame(request.gameName(), authToken, data));
-
-        res.status(200);
-        return gson.toJson(new CreateGameResponse(game.gameId()));
+        return route(req, res, CreateGameRequest.class, (auth, request) -> {
+            var game = Service.createGame(request.gameName(), auth, data);
+            return gson.toJson(new CreateGameResponse(game.gameID()));
+        });
     }
 
     private Object joinGame(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        var request = tryFromJson(req.body(), JoinGameRequest.class);
-        var authToken = req.headers("authorization");
-        Server.tryRun(() -> {
-            Service.joinGame(request.gameID(), request.playerColor(), authToken, data);
-            return false; // Dummy return so the interface works :(
+        return route(req, res, JoinGameRequest.class, (auth, request) -> {
+            Service.joinGame(request.gameID(), request.playerColor(), auth, data);
+            return "{}";
         });
-
-        res.status(200);
-        return "{}";
     }
 
     private Object listGames(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        var authToken = req.headers("authorization");
-        var games = Server.tryRun(() -> Service.listGames(authToken, data));
-
-        res.status(200);
-        return gson.toJson(new ListGamesResponse(games));
+        return route(req, res, JoinGameRequest.class, (auth, _request) -> {
+            var games = Service.listGames(auth, data);
+            return gson.toJson(new ListGamesResponse(games));
+        });
     }
 
     private Object clear(Request req, Response res) throws ResponseException {
-        res.type("application/json");
-        Server.tryRun(() -> {
+        return route(req, res, null, (_auth, _request) -> {
             Service.clear(data);
-            return false; // Dummy return so the interface works :(
+            return "{}";
         });
-
-        res.status(200);
-        return "{}";
     }
 
-    private interface ServerFunction<T> {
-        T run() throws DataAccessException, ServiceException;
+    private interface HandlerFunction<T> {
+        String run(String authToken, T body) throws DataAccessException, ServiceException;
     }
 }
