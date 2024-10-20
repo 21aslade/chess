@@ -22,6 +22,7 @@ public class Server {
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
+        Spark.delete("/session", this::logout);
         Spark.exception(ResponseException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();
@@ -76,6 +77,18 @@ public class Server {
 
         res.status(200);
         return gson.toJson(authData);
+    }
+
+    private Object logout(Request req, Response res) throws ResponseException {
+        res.type("application/json");
+        var authToken = req.headers("authorization");
+        Server.tryRun(() -> {
+            Service.logout(authToken, data);
+            return false; // Dummy return so the interface works :(
+        });
+
+        res.status(200);
+        return "{}";
     }
 
     private Object clear(Request req, Response res) throws ResponseException {
