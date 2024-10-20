@@ -69,7 +69,7 @@ public class Server {
     }
 
     private Object register(Request req, Response res) throws ResponseException {
-        return route(req, res, UserData.class, (_auth, user) -> {
+        return route(req, res, UserData.class, (auth, user) -> {
             var authData = Service.registerUser(user, data);
             return gson.toJson(authData);
         });
@@ -77,14 +77,14 @@ public class Server {
 
     private Object login(Request req, Response res) throws ResponseException {
         record LoginRequest(String username, String password) {}
-        return route(req, res, LoginRequest.class, (_auth, request) -> {
+        return route(req, res, LoginRequest.class, (auth, request) -> {
             var authData = Service.login(request.username(), request.password(), data);
             return gson.toJson(authData);
         });
     }
 
     private Object logout(Request req, Response res) throws ResponseException {
-        return route(req, res, null, (auth, _request) -> {
+        return route(req, res, null, (auth, request) -> {
             Service.logout(auth, data);
             return "{}";
         });
@@ -109,14 +109,14 @@ public class Server {
 
     private Object listGames(Request req, Response res) throws ResponseException {
         record ListGamesResponse(List<GameData> games) {}
-        return route(req, res, null, (auth, _request) -> {
+        return route(req, res, null, (auth, request) -> {
             var games = Service.listGames(auth, data);
             return gson.toJson(new ListGamesResponse(games));
         });
     }
 
     private Object clear(Request req, Response res) throws ResponseException {
-        return route(req, res, null, (_auth, _request) -> {
+        return route(req, res, null, (auth, request) -> {
             Service.clear(data);
             return "{}";
         });
