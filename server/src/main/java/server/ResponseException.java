@@ -11,8 +11,4 @@ public class ResponseException extends Exception {
     public int httpCode() {
         return this.httpCode;
     }
-
-    public String toJson() {
-        return "{ \"message\": \"" + this.getMessage() + "\" }";
-    }
 }
