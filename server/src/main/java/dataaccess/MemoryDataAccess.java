@@ -31,7 +31,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void putGame(GameData game) {
-        this.games.put(game.gameId(), game);
+        this.games.put(game.gameID(), game);
     }
 
     @Override

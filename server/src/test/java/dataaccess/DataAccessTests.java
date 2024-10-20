@@ -58,12 +58,12 @@ public class DataAccessTests {
     void putGame(DataAccess dataAccess) throws DataAccessException {
         var game = new GameData(3, "apple", "dumpling", "gang", new ChessGame());
         dataAccess.putGame(game);
-        var result = dataAccess.getGame(game.gameId());
+        var result = dataAccess.getGame(game.gameID());
         assertEquals(game, result);
 
-        var game2 = new GameData(game.gameId(), "never", "before", "seen", new ChessGame());
+        var game2 = new GameData(game.gameID(), "never", "before", "seen", new ChessGame());
         dataAccess.putGame(game2);
-        var result2 = dataAccess.getGame(game2.gameId());
+        var result2 = dataAccess.getGame(game2.gameID());
         assertEquals(game2, result2);
     }
 
@@ -86,7 +86,7 @@ public class DataAccessTests {
         var game = new GameData(3, "apple", "dumpling", "gang", new ChessGame());
         dataAccess.putGame(game);
         dataAccess.clearGames();
-        assertNull(dataAccess.getGame(game.gameId()));
+        assertNull(dataAccess.getGame(game.gameID()));
     }
 
     @ParameterizedTest
