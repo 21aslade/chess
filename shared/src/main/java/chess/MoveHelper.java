@@ -50,13 +50,13 @@ record MoveHelper(ImmutableBoard board, ChessPosition start, TeamColor color) {
     }
 
     public Stream<ChessMove> rookMoves() {
-        return Stream.of(IntPair.Up, IntPair.Down, IntPair.Left, IntPair.Right)
+        return Stream.of(IntPair.UP, IntPair.DOWN, IntPair.LEFT, IntPair.RIGHT)
             .flatMap(this::rayCast)
             .map(p -> new ChessMove(start, p, null));
     }
 
     public Stream<ChessMove> bishopMoves() {
-        return Stream.of(IntPair.UpLeft, IntPair.UpRight, IntPair.DownLeft, IntPair.DownRight)
+        return Stream.of(IntPair.UP_LEFT, IntPair.UP_RIGHT, IntPair.DOWN_LEFT, IntPair.DOWN_RIGHT)
             .flatMap(this::rayCast)
             .map(p -> new ChessMove(start, p, null));
     }
@@ -92,14 +92,14 @@ record MoveHelper(ImmutableBoard board, ChessPosition start, TeamColor color) {
     public Stream<ChessMove> pawnMoves() {
         var promotionRow = color == TeamColor.WHITE ? ChessBoard.boardSize : 1;
         var startingRow = color == TeamColor.WHITE ? 2 : ChessBoard.boardSize - 1;
-        var forward = color == TeamColor.WHITE ? IntPair.Up : IntPair.Down;
+        var forward = color == TeamColor.WHITE ? IntPair.UP : IntPair.DOWN;
 
         var singleMove = start.add(forward);
         var doubleMove = start.row() == startingRow ? singleMove.add(forward) : null;
         var move = Stream.of(singleMove, doubleMove)
             .takeWhile(p -> p != null && checkTarget(p) == MoveStatus.BLANK);
 
-        var attack = Stream.of(IntPair.Left, IntPair.Right)
+        var attack = Stream.of(IntPair.LEFT, IntPair.RIGHT)
             .map(side -> start.add(forward).add(side))
             .filter(p -> checkTarget(p) == MoveStatus.CAPTURE);
 
