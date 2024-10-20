@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DataAccessTests {
     static class Implementations implements ArgumentsProvider {
         @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
+        public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
             return Stream.of(new MemoryDataAccess()).map(Arguments::of);
         }
     }
