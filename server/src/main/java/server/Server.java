@@ -23,6 +23,7 @@ public class Server {
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
+        Spark.post("/game", this::createGame);
         Spark.exception(ResponseException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();
@@ -89,6 +90,16 @@ public class Server {
 
         res.status(200);
         return "{}";
+    }
+
+    private Object createGame(Request req, Response res) throws ResponseException {
+        res.type("application/json");
+        var request = tryFromJson(req.body(), CreateGameRequest.class);
+        var authToken = req.headers("authorization");
+        var game = Server.tryRun(() -> Service.createGame(request.gameName(), authToken, data));
+
+        res.status(200);
+        return gson.toJson(new CreateGameResponse(game.gameId()));
     }
 
     private Object clear(Request req, Response res) throws ResponseException {

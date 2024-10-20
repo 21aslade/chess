@@ -52,7 +52,7 @@ public class Service {
         verifyNonNull(gameName, authToken);
         Service.verifyAuth(authToken, data);
 
-        var gameId = data.gameCount();
+        var gameId = data.gameCount() + 1;
         var game = new GameData(gameId, null, null, gameName, new ChessGame());
         data.putGame(game);
 
