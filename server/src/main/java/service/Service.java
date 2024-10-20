@@ -70,7 +70,7 @@ public class Service {
     public static void joinGame(int gameId, TeamColor team, String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
-        verifyNonNull(authToken, data);
+        verifyNonNull(team, authToken, data);
         var auth = Service.verifyAuth(authToken, data);
 
         var game = data.getGame(gameId);
