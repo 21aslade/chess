@@ -14,6 +14,10 @@ import java.util.UUID;
 
 public class Service {
     public static AuthData registerUser(UserData user, DataAccess data) throws DataAccessException, ServiceException {
+        verifyNonNull(user);
+        if (!user.initialized()) {
+            throw new ServiceException(ErrorKind.NullInput);
+        }
         var current = data.getUser(user.username());
         if (current != null) {
             throw new ServiceException(ErrorKind.AlreadyExists);
@@ -27,6 +31,7 @@ public class Service {
     public static AuthData login(String username, String password, DataAccess data) throws
         DataAccessException,
         ServiceException {
+        verifyNonNull(username, password);
         var dbUser = data.getUser(username);
         if (dbUser == null || !dbUser.password().equals(password)) {
             throw new ServiceException(ErrorKind.Unauthorized);
@@ -36,6 +41,7 @@ public class Service {
     }
 
     public static void logout(String authToken, DataAccess data) throws DataAccessException, ServiceException {
+        verifyNonNull(authToken);
         Service.verifyAuth(authToken, data);
         data.deleteAuth(authToken);
     }
@@ -43,6 +49,7 @@ public class Service {
     public static GameData createGame(String gameName, String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
+        verifyNonNull(gameName, authToken);
         Service.verifyAuth(authToken, data);
 
         var gameId = data.gameCount();
@@ -55,6 +62,7 @@ public class Service {
     public static List<GameData> listGames(String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
+        verifyNonNull(authToken);
         Service.verifyAuth(authToken, data);
         return data.getGames();
     }
@@ -62,6 +70,7 @@ public class Service {
     public static void joinGame(int gameId, TeamColor team, String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
+        verifyNonNull(authToken, data);
         var auth = Service.verifyAuth(authToken, data);
 
         var game = data.getGame(gameId);
@@ -91,6 +100,14 @@ public class Service {
         data.clearUsers();
         data.clearAuth();
         data.clearGames();
+    }
+
+    private static void verifyNonNull(Object... objects) throws ServiceException {
+        for (var o : objects) {
+            if (o == null) {
+                throw new ServiceException(ErrorKind.NullInput);
+            }
+        }
     }
 
     private static AuthData verifyAuth(String authToken, DataAccess data) throws ServiceException, DataAccessException {

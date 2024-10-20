@@ -6,7 +6,8 @@ public class ServiceException extends Exception {
     public enum ErrorKind {
         AlreadyExists,
         DoesNotExist,
-        Unauthorized
+        Unauthorized,
+        NullInput
     }
 
     public ServiceException(ErrorKind kind) {
