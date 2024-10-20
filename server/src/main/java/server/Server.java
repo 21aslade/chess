@@ -21,6 +21,7 @@ public class Server {
 
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
+        Spark.post("/session", this::login);
         Spark.exception(ResponseException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();
@@ -63,6 +64,15 @@ public class Server {
         res.type("application/json");
         var user = tryFromJson(req.body(), UserData.class);
         var authData = Server.tryRun(() -> Service.registerUser(user, data));
+
+        res.status(200);
+        return gson.toJson(authData);
+    }
+
+    private Object login(Request req, Response res) throws ResponseException {
+        res.type("application/json");
+        var request = tryFromJson(req.body(), LoginRequest.class);
+        var authData = Server.tryRun(() -> Service.login(request.username(), request.password(), data));
 
         res.status(200);
         return gson.toJson(authData);
