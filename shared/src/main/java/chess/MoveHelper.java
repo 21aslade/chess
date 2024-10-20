@@ -90,8 +90,8 @@ record MoveHelper(ImmutableBoard board, ChessPosition start, TeamColor color) {
     }
 
     public Stream<ChessMove> pawnMoves() {
-        var promotionRow = color == TeamColor.WHITE ? ChessBoard.boardSize : 1;
-        var startingRow = color == TeamColor.WHITE ? 2 : ChessBoard.boardSize - 1;
+        var promotionRow = color == TeamColor.WHITE ? ChessBoard.BOARD_SIZE : 1;
+        var startingRow = color == TeamColor.WHITE ? 2 : ChessBoard.BOARD_SIZE - 1;
         var forward = color == TeamColor.WHITE ? IntPair.UP : IntPair.DOWN;
 
         var singleMove = start.add(forward);

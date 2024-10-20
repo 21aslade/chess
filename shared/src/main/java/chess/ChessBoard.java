@@ -16,13 +16,13 @@ import java.util.stream.Stream;
  * signature of the existing methods.
  */
 public class ChessBoard implements ImmutableBoard {
-    static final int boardSize = 8;
-    private ChessPiece[][] pieces = new ChessPiece[boardSize][boardSize];
+    static final int BOARD_SIZE = 8;
+    private ChessPiece[][] pieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
 
     public ChessBoard() {}
 
     private static ChessPiece[] pawnRow(TeamColor color) {
-        var row = new ChessPiece[boardSize];
+        var row = new ChessPiece[BOARD_SIZE];
         Arrays.fill(row, new ChessPiece(color, PieceType.PAWN));
         return row;
     }
@@ -96,8 +96,8 @@ public class ChessBoard implements ImmutableBoard {
     }
 
     public Stream<ChessPosition> piecePositions(Predicate<ChessPiece> pred) {
-        return IntStream.range(1, ChessBoard.boardSize + 1)
-            .mapToObj(a -> IntStream.range(1, ChessBoard.boardSize + 1).mapToObj(b -> new ChessPosition(a, b)))
+        return IntStream.range(1, ChessBoard.BOARD_SIZE + 1)
+            .mapToObj(a -> IntStream.range(1, ChessBoard.BOARD_SIZE + 1).mapToObj(b -> new ChessPosition(a, b)))
             .flatMap(i -> i)
             .filter(p -> {
                 var piece = this.getPiece(p);
@@ -110,11 +110,11 @@ public class ChessBoard implements ImmutableBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        this.pieces = new ChessPiece[boardSize][boardSize];
+        this.pieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
         this.pieces[0] = ChessBoard.backRow(TeamColor.WHITE);
         this.pieces[1] = ChessBoard.pawnRow(TeamColor.WHITE);
-        this.pieces[boardSize - 2] = ChessBoard.pawnRow(TeamColor.BLACK);
-        this.pieces[boardSize - 1] = ChessBoard.backRow(TeamColor.BLACK);
+        this.pieces[BOARD_SIZE - 2] = ChessBoard.pawnRow(TeamColor.BLACK);
+        this.pieces[BOARD_SIZE - 1] = ChessBoard.backRow(TeamColor.BLACK);
     }
 
     @Override
@@ -142,7 +142,7 @@ public class ChessBoard implements ImmutableBoard {
 
     @Override
     public boolean contains(ChessPosition position) {
-        return position.row() <= boardSize && position.col() <= boardSize
+        return position.row() <= BOARD_SIZE && position.col() <= BOARD_SIZE
             && position.row() >= 1 && position.col() >= 1;
     }
 }
