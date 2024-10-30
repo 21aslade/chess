@@ -15,17 +15,24 @@ public class DBDataAccess implements DataAccess {
 
     @Override
     public void putUser(UserData user) throws DataAccessException {
-
+        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+        executeStatement(statement, user.username(), user.password(), user.email());
     }
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
-        return null;
+        var statement = "SELECT password, email FROM user WHERE username=?";
+        return executeQuery(statement, (rs) -> {
+            if (!rs.next()) { return null; }
+            var password = rs.getString(1);
+            var email = rs.getString(2);
+            return new UserData(username, password, email);
+        }, username);
     }
 
     @Override
     public void clearUsers() throws DataAccessException {
-
+        executeStatement("TRUNCATE user");
     }
 
     @Override
