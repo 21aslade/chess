@@ -61,7 +61,17 @@ public class DBDataAccess implements DataAccess {
 
     @Override
     public void putGame(GameData game) throws DataAccessException {
-
+        var statement = "REPLACE INTO gameData (id, white_username, black_username, game_name, game)"
+            + " VALUES (?, ?, ?, ?, ?)";
+        var json = new Gson().toJson(game.game());
+        executeStatement(
+            statement,
+            game.gameID(),
+            game.whiteUsername(),
+            game.blackUsername(),
+            game.gameName(),
+            json
+        );
     }
 
     @Override
