@@ -62,22 +62,29 @@ public class DBDataAccess implements DataAccess {
 
     @Override
     public void putAuth(AuthData auth) throws DataAccessException {
-
+        var statement = "INSERT INTO auth (auth_token, username) VALUES (?, ?)";
+        executeStatement(statement, auth.authToken(), auth.username());
     }
 
     @Override
     public AuthData getAuth(String token) throws DataAccessException {
-        return null;
+        var statement = "SELECT username FROM auth WHERE auth_token=?";
+        return executeQuery(statement, (rs) -> {
+            if (!rs.next()) { return null; }
+            var username = rs.getString(1);
+            return new AuthData(token, username);
+        }, token);
     }
 
     @Override
     public void deleteAuth(String token) throws DataAccessException {
-
+        var statement = "DELETE FROM auth WHERE auth_token=?";
+        executeStatement(statement, token);
     }
 
     @Override
     public void clearAuth() throws DataAccessException {
-
+        executeStatement("TRUNCATE auth");
     }
 
     private void executeStatement(String statement, Object... params) throws DataAccessException {

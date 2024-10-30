@@ -112,6 +112,20 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
+    void deleteAuth(DataAccess dataAccess) throws DataAccessException {
+        var auth1 = new AuthData("oh", "yeah");
+        dataAccess.putAuth(auth1);
+        var auth2 = new AuthData("yes", "sir");
+        dataAccess.putAuth(auth2);
+
+        dataAccess.deleteAuth(auth1.authToken());
+
+        assertNull(dataAccess.getAuth(auth1.authToken()));
+        assertEquals(dataAccess.getAuth(auth2.authToken()), auth2);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
     void clearAuth(DataAccess dataAccess) throws DataAccessException {
         var auth = new AuthData("oh", "yeah");
         dataAccess.putAuth(auth);
