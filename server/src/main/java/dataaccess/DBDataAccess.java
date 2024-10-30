@@ -1,12 +1,15 @@
 package dataaccess;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DBDataAccess implements DataAccess {
@@ -38,7 +41,22 @@ public class DBDataAccess implements DataAccess {
 
     @Override
     public int createGame(String name, ChessGame game) throws DataAccessException {
-        return 0;
+        var json = new Gson().toJson(game);
+        var statement = "INSERT INTO gameData (game_name, game) VALUES (?, ?)";
+        try (
+            var connection = DatabaseManager.getConnection();
+            var prepared = connection.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)
+        ) {
+            prepared.setString(1, name);
+            prepared.setString(2, json);
+
+            prepared.executeUpdate();
+
+            var rs = prepared.getGeneratedKeys();
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     @Override
@@ -48,17 +66,40 @@ public class DBDataAccess implements DataAccess {
 
     @Override
     public GameData getGame(int gameId) throws DataAccessException {
-        return null;
+        var statement = "SELECT id, white_username, black_username, game_name, game FROM gameData WHERE id=?";
+        return executeQuery(statement, (rs) -> {
+            if (!rs.next()) { return null; }
+            return readGame(rs);
+        }, gameId);
     }
 
     @Override
     public List<GameData> getGames() throws DataAccessException {
-        return List.of();
+        var statement = "SELECT id, white_username, black_username, game_name, game FROM gameData";
+        return executeQuery(statement, (rs) -> {
+            var result = new ArrayList<GameData>();
+            while (rs.next()) {
+                result.add(readGame(rs));
+            }
+
+            return result;
+        });
+    }
+
+    private GameData readGame(ResultSet rs) throws SQLException {
+        var id = rs.getInt(1);
+        var whiteUsername = rs.getString(2);
+        var blackUsername = rs.getString(3);
+        var gameName = rs.getString(4);
+        var json = rs.getString(5);
+        var chessGame = new Gson().fromJson(json, ChessGame.class);
+
+        return new GameData(id, whiteUsername, blackUsername, gameName, chessGame);
     }
 
     @Override
     public void clearGames() throws DataAccessException {
-
+        executeStatement("TRUNCATE gameData");
     }
 
     @Override
@@ -152,8 +193,8 @@ public class DBDataAccess implements DataAccess {
         """
             CREATE TABLE IF NOT EXISTS gameData (
               `id` int NOT NULL AUTO_INCREMENT,
-              `white_username` varchar(256),
-              `black_username` varchar(256),
+              `white_username` varchar(256) DEFAULT NULL,
+              `black_username` varchar(256) DEFAULT NULL,
               `game_name` varchar(256) NOT NULL,
               `game` text NOT NULL,
               PRIMARY KEY (`id`)
