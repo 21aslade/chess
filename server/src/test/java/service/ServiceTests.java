@@ -84,10 +84,7 @@ public class ServiceTests {
         var auth = Service.registerUser(user1, dataAccess);
         var game1 = Service.createGame(gameName, auth.authToken(), dataAccess);
         var game2 = Service.createGame(gameName, auth.authToken(), dataAccess);
-
-        var expected1 = new GameData(game1.gameID(), null, null, gameName, new ChessGame());
-        assertEquals(expected1, game1);
-        assertNotEquals(game1.gameID(), game2.gameID());
+        assertNotEquals(game1, game2);
     }
 
     @Test
@@ -104,7 +101,8 @@ public class ServiceTests {
         var game2 = Service.createGame(gameName, auth.authToken(), dataAccess);
 
         var actual = Service.listGames(auth.authToken(), dataAccess);
-        assertEquals(List.of(game1, game2), actual);
+        var ids = actual.stream().map(GameData::gameID).toList();
+        assertEquals(List.of(game1, game2), ids);
     }
 
     @Test
@@ -120,12 +118,12 @@ public class ServiceTests {
         var gameName = "game";
         var game = Service.createGame(gameName, auth1.authToken(), dataAccess);
 
-        Service.joinGame(game.gameID(), TeamColor.WHITE, auth1.authToken(), dataAccess);
+        Service.joinGame(game, TeamColor.WHITE, auth1.authToken(), dataAccess);
         // Test for idempotence
-        Service.joinGame(game.gameID(), TeamColor.WHITE, auth1.authToken(), dataAccess);
-        Service.joinGame(game.gameID(), TeamColor.BLACK, auth2.authToken(), dataAccess);
+        Service.joinGame(game, TeamColor.WHITE, auth1.authToken(), dataAccess);
+        Service.joinGame(game, TeamColor.BLACK, auth2.authToken(), dataAccess);
 
-        var expected = new GameData(game.gameID(), user1.username(), user2.username(), gameName, new ChessGame());
+        var expected = new GameData(game, user1.username(), user2.username(), gameName, new ChessGame());
         assertEquals(List.of(expected), Service.listGames(auth1.authToken(), dataAccess));
     }
 
@@ -153,11 +151,11 @@ public class ServiceTests {
         var auth2 = Service.registerUser(user2, dataAccess);
         var game = Service.createGame(gameName, auth1.authToken(), dataAccess);
 
-        Service.joinGame(game.gameID(), TeamColor.WHITE, auth1.authToken(), dataAccess);
+        Service.joinGame(game, TeamColor.WHITE, auth1.authToken(), dataAccess);
 
         var error = assertThrows(
             ServiceException.class,
-            () -> Service.joinGame(game.gameID(), TeamColor.WHITE, auth2.authToken(), dataAccess)
+            () -> Service.joinGame(game, TeamColor.WHITE, auth2.authToken(), dataAccess)
         );
 
         assertEquals(ErrorKind.AlreadyExists, error.kind());

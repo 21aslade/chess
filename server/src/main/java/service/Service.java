@@ -46,17 +46,13 @@ public class Service {
         data.deleteAuth(authToken);
     }
 
-    public static GameData createGame(String gameName, String authToken, DataAccess data) throws
+    public static int createGame(String gameName, String authToken, DataAccess data) throws
         DataAccessException,
         ServiceException {
         verifyNonNull(gameName, authToken);
         Service.verifyAuth(authToken, data);
 
-        var gameId = data.gameCount() + 1;
-        var game = new GameData(gameId, null, null, gameName, new ChessGame());
-        data.putGame(game);
-
-        return game;
+        return data.createGame(gameName, new ChessGame());
     }
 
     public static List<GameData> listGames(String authToken, DataAccess data) throws

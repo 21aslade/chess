@@ -94,8 +94,8 @@ public class Server {
         record CreateGameRequest(String gameName) {}
         record CreateGameResponse(int gameID) {}
         return route(req, res, CreateGameRequest.class, (auth, request) -> {
-            var game = Service.createGame(request.gameName(), auth, data);
-            return gson.toJson(new CreateGameResponse(game.gameID()));
+            var id = Service.createGame(request.gameName(), auth, data);
+            return gson.toJson(new CreateGameResponse(id));
         });
     }
 

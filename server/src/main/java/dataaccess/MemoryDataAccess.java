@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -30,13 +31,17 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void putGame(GameData game) {
-        this.games.put(game.gameID(), game);
+    public int createGame(String name, ChessGame game) {
+        var id = this.games.size() + 1;
+        var gameData = new GameData(id, null, null, name, game);
+        this.games.put(id, gameData);
+
+        return id;
     }
 
     @Override
-    public int gameCount() {
-        return this.games.size();
+    public void putGame(GameData game) {
+        this.games.put(game.gameID(), game);
     }
 
     @Override

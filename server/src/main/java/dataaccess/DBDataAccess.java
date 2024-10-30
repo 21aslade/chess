@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -36,13 +37,13 @@ public class DBDataAccess implements DataAccess {
     }
 
     @Override
-    public void putGame(GameData game) throws DataAccessException {
-
+    public int createGame(String name, ChessGame game) throws DataAccessException {
+        return 0;
     }
 
     @Override
-    public int gameCount() throws DataAccessException {
-        return 0;
+    public void putGame(GameData game) throws DataAccessException {
+
     }
 
     @Override

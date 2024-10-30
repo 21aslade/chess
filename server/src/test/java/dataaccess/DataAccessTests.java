@@ -61,6 +61,23 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
+    void createGame(DataAccess dataAccess) throws DataAccessException {
+        var name1 = "numba one";
+        var id1 = dataAccess.createGame(name1, new ChessGame());
+        var result1 = dataAccess.getGame(id1);
+        var expected1 = new GameData(id1, null, null, name1, new ChessGame());
+        assertEquals(expected1, result1);
+
+        var name2 = "numba two";
+        var id2 = dataAccess.createGame(name2, new ChessGame());
+        assertNotEquals(id1, id2);
+        var result2 = dataAccess.getGame(id2);
+        var expected2 = new GameData(id2, null, null, name2, new ChessGame());
+        assertEquals(expected2, result2);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
     void putGame(DataAccess dataAccess) throws DataAccessException {
         var game = new GameData(3, "apple", "dumpling", "gang", new ChessGame());
         dataAccess.putGame(game);

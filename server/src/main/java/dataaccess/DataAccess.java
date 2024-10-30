@@ -14,12 +14,12 @@ public interface DataAccess {
 
     void clearUsers() throws DataAccessException;
 
+    int createGame(String name, ChessGame game) throws DataAccessException;
+
     void putGame(GameData game) throws DataAccessException;
 
-    int gameCount() throws DataAccessException;
-
     GameData getGame(int gameId) throws DataAccessException;
-    
+
     List<GameData> getGames() throws DataAccessException;
 
     void clearGames() throws DataAccessException;
