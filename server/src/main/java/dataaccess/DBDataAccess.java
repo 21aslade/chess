@@ -72,6 +72,26 @@ public class DBDataAccess implements DataAccess {
 
     }
 
+    private void executeStatement(String statement, Object... params) throws DataAccessException {
+        try (
+            var connection = DatabaseManager.getConnection();
+            var prepared = connection.prepareStatement(statement)
+        ) {
+            for (int i = 0; i < params.length; i++) {
+                var param = params[i];
+                switch (param) {
+                    case String s -> prepared.setString(i + 1, s);
+                    case Integer n -> prepared.setInt(i + 1, n);
+                    case Boolean b -> prepared.setBoolean(i + 1, b);
+                    default -> throw new RuntimeException("Object of unknown type detected");
+                }
+            }
+            prepared.execute();
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
     private final String[] createStatements = {
         """
             CREATE TABLE IF NOT EXISTS user (
