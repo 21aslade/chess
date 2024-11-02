@@ -23,7 +23,7 @@ public class Service {
             throw new ServiceException(ErrorKind.AlreadyExists);
         }
 
-        data.putUser(user);
+        data.insertUser(user);
 
         return createSession(user.username(), data);
     }
@@ -118,7 +118,7 @@ public class Service {
     private static AuthData createSession(String username, DataAccess data) throws DataAccessException {
         var uuid = UUID.randomUUID().toString();
         var authData = new AuthData(uuid, username);
-        data.putAuth(authData);
+        data.insertAuth(authData);
 
         return authData;
     }

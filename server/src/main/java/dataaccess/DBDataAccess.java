@@ -18,7 +18,7 @@ public class DBDataAccess implements DataAccess {
     }
 
     @Override
-    public void putUser(UserData user) throws DataAccessException {
+    public void insertUser(UserData user) throws DataAccessException {
         var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
         executeStatement(statement, user.username(), user.password(), user.email());
     }
@@ -113,7 +113,7 @@ public class DBDataAccess implements DataAccess {
     }
 
     @Override
-    public void putAuth(AuthData auth) throws DataAccessException {
+    public void insertAuth(AuthData auth) throws DataAccessException {
         var statement = "INSERT INTO auth (auth_token, username) VALUES (?, ?)";
         executeStatement(statement, auth.authToken(), auth.username());
     }

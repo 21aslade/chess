@@ -16,8 +16,11 @@ public class MemoryDataAccess implements DataAccess {
     private final Map<String, AuthData> auth = new HashMap<>();
 
     @Override
-    public void putUser(UserData user) {
-        this.users.put(user.username(), user);
+    public void insertUser(UserData user) throws DataAccessException {
+        var current = this.users.putIfAbsent(user.username(), user);
+        if (current != null) {
+            throw new DataAccessException("Duplicate username");
+        }
     }
 
     @Override
@@ -60,8 +63,11 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void putAuth(AuthData auth) {
-        this.auth.put(auth.authToken(), auth);
+    public void insertAuth(AuthData auth) throws DataAccessException {
+        var current = this.auth.putIfAbsent(auth.authToken(), auth);
+        if (current != null) {
+            throw new DataAccessException("Duplicate authToken");
+        }
     }
 
     @Override

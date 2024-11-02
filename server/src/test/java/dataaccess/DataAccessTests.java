@@ -37,9 +37,9 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
-    void putUser(DataAccess dataAccess) throws DataAccessException {
+    void insertUser(DataAccess dataAccess) throws DataAccessException {
         var user = new UserData("beans", "paradox", "em");
-        dataAccess.putUser(user);
+        dataAccess.insertUser(user);
         var result = dataAccess.getUser(user.username());
         assertEquals(user, result);
     }
@@ -48,7 +48,7 @@ public class DataAccessTests {
     @ArgumentsSource(Implementations.class)
     void clearUsers(DataAccess dataAccess) throws DataAccessException {
         var user = new UserData("beans", "paradox", "em");
-        dataAccess.putUser(user);
+        dataAccess.insertUser(user);
         dataAccess.clearUsers();
         assertNull(dataAccess.getUser(user.username()));
     }
@@ -120,9 +120,9 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
-    void putAuth(DataAccess dataAccess) throws DataAccessException {
+    void insertAuth(DataAccess dataAccess) throws DataAccessException {
         var auth = new AuthData("oh", "yeah");
-        dataAccess.putAuth(auth);
+        dataAccess.insertAuth(auth);
         var result = dataAccess.getAuth(auth.authToken());
         assertEquals(auth, result);
     }
@@ -131,9 +131,9 @@ public class DataAccessTests {
     @ArgumentsSource(Implementations.class)
     void deleteAuth(DataAccess dataAccess) throws DataAccessException {
         var auth1 = new AuthData("oh", "yeah");
-        dataAccess.putAuth(auth1);
+        dataAccess.insertAuth(auth1);
         var auth2 = new AuthData("yes", "sir");
-        dataAccess.putAuth(auth2);
+        dataAccess.insertAuth(auth2);
 
         dataAccess.deleteAuth(auth1.authToken());
 
@@ -145,7 +145,7 @@ public class DataAccessTests {
     @ArgumentsSource(Implementations.class)
     void clearAuth(DataAccess dataAccess) throws DataAccessException {
         var auth = new AuthData("oh", "yeah");
-        dataAccess.putAuth(auth);
+        dataAccess.insertAuth(auth);
         dataAccess.clearAuth();
         assertNull(dataAccess.getAuth(auth.authToken()));
     }
