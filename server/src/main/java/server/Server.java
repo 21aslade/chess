@@ -3,9 +3,9 @@ package server;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import dataaccess.DBDataAccess;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryDataAccess;
 import model.GameData;
 import model.UserData;
 import service.Service;
@@ -15,8 +15,17 @@ import spark.*;
 import java.util.List;
 
 public class Server {
-    private final DataAccess data = new MemoryDataAccess();
+    private final DataAccess data;
     private final Gson gson = new Gson();
+
+    public Server() {
+        try {
+            data = new DBDataAccess();
+        } catch (DataAccessException e) {
+            System.err.println("Database initialization failed");
+            throw new RuntimeException("Failed to initialize database");
+        }
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
