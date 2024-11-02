@@ -46,6 +46,14 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
+    void insertUserDuplicate(DataAccess dataAccess) throws DataAccessException {
+        var user = new UserData("beans", "paradox", "em");
+        dataAccess.insertUser(user);
+        assertThrows(DataAccessException.class, () -> dataAccess.insertUser(user));
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
     void clearUsers(DataAccess dataAccess) throws DataAccessException {
         var user = new UserData("beans", "paradox", "em");
         dataAccess.insertUser(user);
@@ -61,24 +69,17 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
-    void emptyGetGames(DataAccess dataAccess) throws DataAccessException {
-        assertEquals(0, dataAccess.getGames().size());
-    }
-
-    @ParameterizedTest
-    @ArgumentsSource(Implementations.class)
     void createGame(DataAccess dataAccess) throws DataAccessException {
-        var name1 = "numba one";
-        var id1 = dataAccess.createGame(name1, new ChessGame());
+        var name = "named";
+        var id1 = dataAccess.createGame(name, new ChessGame());
         var result1 = dataAccess.getGame(id1);
-        var expected1 = new GameData(id1, null, null, name1, new ChessGame());
+        var expected1 = new GameData(id1, null, null, name, new ChessGame());
         assertEquals(expected1, result1);
 
-        var name2 = "numba two";
-        var id2 = dataAccess.createGame(name2, new ChessGame());
+        var id2 = dataAccess.createGame(name, new ChessGame());
         assertNotEquals(id1, id2);
         var result2 = dataAccess.getGame(id2);
-        var expected2 = new GameData(id2, null, null, name2, new ChessGame());
+        var expected2 = new GameData(id2, null, null, name, new ChessGame());
         assertEquals(expected2, result2);
     }
 
@@ -94,6 +95,12 @@ public class DataAccessTests {
         dataAccess.putGame(game2);
         var result2 = dataAccess.getGame(game2.gameID());
         assertEquals(game2, result2);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
+    void emptyGetGame(DataAccess dataAccess) throws DataAccessException {
+        assertNull(dataAccess.getGame(2));
     }
 
     @ParameterizedTest
@@ -121,6 +128,12 @@ public class DataAccessTests {
         var expected = List.of(game, game2);
         var actual = dataAccess.getGames();
         assertEquals(expected, actual);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
+    void emptyGetGames(DataAccess dataAccess) throws DataAccessException {
+        assertEquals(List.of(), dataAccess.getGames());
     }
 
     @ParameterizedTest
@@ -155,6 +168,14 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
+    void insertAuthDuplicate(DataAccess dataAccess) throws DataAccessException {
+        var auth = new AuthData("oh", "yeah");
+        dataAccess.insertAuth(auth);
+        assertThrows(DataAccessException.class, () -> dataAccess.insertAuth(auth));
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
     void deleteAuth(DataAccess dataAccess) throws DataAccessException {
         var auth1 = new AuthData("oh", "yeah");
         dataAccess.insertAuth(auth1);
@@ -165,6 +186,12 @@ public class DataAccessTests {
 
         assertNull(dataAccess.getAuth(auth1.authToken()));
         assertEquals(dataAccess.getAuth(auth2.authToken()), auth2);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
+    void deleteAuthNonexistent(DataAccess dataAccess) throws DataAccessException {
+        assertDoesNotThrow(() -> dataAccess.deleteAuth("nary a chance"));
     }
 
     @ParameterizedTest
