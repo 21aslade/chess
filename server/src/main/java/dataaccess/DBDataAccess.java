@@ -9,6 +9,7 @@ import model.UserData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,6 +147,10 @@ public class DBDataAccess implements DataAccess {
         ) {
             for (int i = 0; i < params.length; i++) {
                 var param = params[i];
+                if (param == null) {
+                    prepared.setNull(i + 1, Types.VARCHAR);
+                    continue;
+                }
                 switch (param) {
                     case String s -> prepared.setString(i + 1, s);
                     case Integer n -> prepared.setInt(i + 1, n);
