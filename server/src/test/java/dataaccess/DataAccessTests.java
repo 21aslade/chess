@@ -55,6 +55,12 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
+    void emptyClearUsers(DataAccess dataAccess) {
+        assertDoesNotThrow(dataAccess::clearUsers);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
     void emptyGetGames(DataAccess dataAccess) throws DataAccessException {
         assertEquals(0, dataAccess.getGames().size());
     }
@@ -92,6 +98,20 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ArgumentsSource(Implementations.class)
+    void getGame(DataAccess dataAccess) throws DataAccessException {
+        var game1 = new GameData(3, "apple", "dumpling", "gang", new ChessGame());
+        dataAccess.putGame(game1);
+        var game2 = new GameData(4, "never", "before", "seen", new ChessGame());
+        dataAccess.putGame(game2);
+
+        var actual1 = dataAccess.getGame(game1.gameID());
+        var actual2 = dataAccess.getGame(game2.gameID());
+        assertEquals(game1, actual1);
+        assertEquals(game2, actual2);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
     void getGames(DataAccess dataAccess) throws DataAccessException {
         var game = new GameData(3, "apple", "dumpling", "gang", new ChessGame());
         dataAccess.putGame(game);
@@ -110,6 +130,12 @@ public class DataAccessTests {
         dataAccess.putGame(game);
         dataAccess.clearGames();
         assertNull(dataAccess.getGame(game.gameID()));
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
+    void emptyClearGames(DataAccess dataAccess) {
+        assertDoesNotThrow(dataAccess::clearGames);
     }
 
     @ParameterizedTest
@@ -148,5 +174,11 @@ public class DataAccessTests {
         dataAccess.insertAuth(auth);
         dataAccess.clearAuth();
         assertNull(dataAccess.getAuth(auth.authToken()));
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(Implementations.class)
+    void emptyClearAuth(DataAccess dataAccess) {
+        assertDoesNotThrow(dataAccess::clearAuth);
     }
 }
