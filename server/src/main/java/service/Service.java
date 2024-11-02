@@ -7,6 +7,7 @@ import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import service.ServiceException.ErrorKind;
 
 import java.util.List;
@@ -18,14 +19,18 @@ public class Service {
         if (!user.initialized()) {
             throw new ServiceException(ErrorKind.NullInput);
         }
+
         var current = data.getUser(user.username());
         if (current != null) {
             throw new ServiceException(ErrorKind.AlreadyExists);
         }
 
-        data.insertUser(user);
+        var hashed = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        var dbUser = new UserData(user.username(), hashed, user.email());
 
-        return createSession(user.username(), data);
+        data.insertUser(dbUser);
+
+        return createSession(dbUser.username(), data);
     }
 
     public static AuthData login(String username, String password, DataAccess data) throws
@@ -33,7 +38,8 @@ public class Service {
         ServiceException {
         verifyNonNull(username, password);
         var dbUser = data.getUser(username);
-        if (dbUser == null || !dbUser.password().equals(password)) {
+
+        if (dbUser == null || !BCrypt.checkpw(password, dbUser.password())) {
             throw new ServiceException(ErrorKind.Unauthorized);
         }
 
