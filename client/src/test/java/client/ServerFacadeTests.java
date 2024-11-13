@@ -4,7 +4,7 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
     private static Server server;
@@ -30,7 +30,10 @@ public class ServerFacadeTests {
 
     @Test
     public void register() {
-        facade.register(new UserData("oop", "si", "daisy"));
+        var user = new UserData("oop", "si", "daisy");
+        var authData = facade.register(user);
+        assertEquals(user.username(), authData.username());
+        assertNotNull(authData.authToken());
     }
 
     @Test
@@ -38,5 +41,20 @@ public class ServerFacadeTests {
         var user = new UserData("guess", "who's", "back");
         facade.register(user);
         assertThrows(ServerException.class, () -> facade.register(user));
+    }
+
+    @Test
+    public void login() {
+        var user = new UserData("a", "b", "c");
+        facade.register(user);
+
+        var authData = facade.login(user.username(), user.password());
+        assertEquals(user.username(), authData.username());
+        assertNotNull(authData.authToken());
+    }
+
+    @Test
+    public void loginNonexistent() {
+        assertThrows(ServerException.class, () -> facade.login("baleeted", "single deuce"));
     }
 }

@@ -33,8 +33,9 @@ public class HttpFacade implements ServerFacade {
     }
 
     @Override
-    public AuthData login(String username, String password) throws ServerException {
-        return null;
+    public AuthData login(String username, String password) {
+        var request = new LoginRequest(username, password);
+        return makeRequest("POST", "/session", null, request, AuthData.class);
     }
 
     @Override
