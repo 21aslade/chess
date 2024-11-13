@@ -40,7 +40,7 @@ public class HttpFacade implements ServerFacade {
 
     @Override
     public void logout(String authToken) throws ServerException {
-
+        makeRequest("DELETE", "/session", authToken, null, null);
     }
 
     @Override

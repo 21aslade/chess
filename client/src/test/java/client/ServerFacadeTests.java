@@ -57,4 +57,17 @@ public class ServerFacadeTests {
     public void loginNonexistent() {
         assertThrows(ServerException.class, () -> facade.login("baleeted", "single deuce"));
     }
+
+    @Test
+    public void logout() {
+        var user = new UserData("n", "o", "p");
+        var authData = facade.register(user);
+
+        facade.logout(authData.authToken());
+    }
+
+    @Test
+    public void logoutNonexistent() {
+        assertThrows(ServerException.class, () -> facade.logout("open sesame"));
+    }
 }
