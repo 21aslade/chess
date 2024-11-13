@@ -1,18 +1,15 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import dataaccess.DBDataAccess;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
-import model.GameData;
 import model.UserData;
+import server.ServerInterface.*;
 import service.Service;
 import service.ServiceException;
 import spark.*;
-
-import java.util.List;
 
 public class Server {
     private final DataAccess data;
@@ -51,7 +48,6 @@ public class Server {
     }
 
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
-        record ResponseExceptionBody(String message) {}
         res.status(ex.httpCode());
         res.body(gson.toJson(new ResponseExceptionBody(ex.getMessage())));
     }
@@ -85,7 +81,6 @@ public class Server {
     }
 
     private Object login(Request req, Response res) throws ResponseException {
-        record LoginRequest(String username, String password) {}
         return route(req, res, LoginRequest.class, (auth, request) -> {
             var authData = Service.login(request.username(), request.password(), data);
             return gson.toJson(authData);
@@ -100,8 +95,6 @@ public class Server {
     }
 
     private Object createGame(Request req, Response res) throws ResponseException {
-        record CreateGameRequest(String gameName) {}
-        record CreateGameResponse(int gameID) {}
         return route(req, res, CreateGameRequest.class, (auth, request) -> {
             var id = Service.createGame(request.gameName(), auth, data);
             return gson.toJson(new CreateGameResponse(id));
@@ -109,7 +102,6 @@ public class Server {
     }
 
     private Object joinGame(Request req, Response res) throws ResponseException {
-        record JoinGameRequest(ChessGame.TeamColor playerColor, int gameID) {}
         return route(req, res, JoinGameRequest.class, (auth, request) -> {
             Service.joinGame(request.gameID(), request.playerColor(), auth, data);
             return "{}";
@@ -117,7 +109,6 @@ public class Server {
     }
 
     private Object listGames(Request req, Response res) throws ResponseException {
-        record ListGamesResponse(List<GameData> games) {}
         return route(req, res, null, (auth, request) -> {
             var games = Service.listGames(auth, data);
             return gson.toJson(new ListGamesResponse(games));
