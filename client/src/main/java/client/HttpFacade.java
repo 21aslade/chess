@@ -45,17 +45,23 @@ public class HttpFacade implements ServerFacade {
 
     @Override
     public List<GameData> listGames(String authToken) throws ServerException {
-        return List.of();
+        var response = makeRequest("GET", "/game", authToken, null, ListGamesResponse.class);
+        assert response != null;
+        return response.games();
     }
 
     @Override
     public int createGame(String authToken, String gameName) throws ServerException {
-        return 0;
+        var request = new CreateGameRequest(gameName);
+        var response = makeRequest("POST", "/game", authToken, request, CreateGameResponse.class);
+        assert response != null;
+        return response.gameID();
     }
 
     @Override
     public void joinGame(String authToken, int gameId, TeamColor color) throws ServerException {
-
+        var request = new JoinGameRequest(color, gameId);
+        makeRequest("PUT", "/game", authToken, request, JoinGameRequest.class);
     }
 
     private <T> T makeRequest(String method, String path, String authToken, Object body, Class<T> responseClass) throws
