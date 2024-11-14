@@ -28,7 +28,7 @@ public class PrintBoard {
         result.append(columnHeaders);
 
         var rowIndexes = IntStream.range(1, ChessBoard.BOARD_SIZE + 1);
-        var rows = team == TeamColor.WHITE ? rowIndexes : rowIndexes.map(r -> ChessBoard.BOARD_SIZE - r + 1);
+        var rows = team == TeamColor.WHITE ? rowIndexes.map(r -> ChessBoard.BOARD_SIZE - r + 1) : rowIndexes;
         rows.forEach((r) -> result.append(row(board, r, team)));
 
         result.append(columnHeaders);
@@ -49,7 +49,7 @@ public class PrintBoard {
         var result = new StringBuilder().append(header);
 
         var colIndexes = IntStream.range(1, ChessBoard.BOARD_SIZE + 1);
-        var cols = team == TeamColor.WHITE ? colIndexes : colIndexes.map(c -> ChessBoard.BOARD_SIZE - c + 1);
+        var cols = team == TeamColor.WHITE ? colIndexes.map(c -> ChessBoard.BOARD_SIZE - c + 1) : colIndexes;
         cols.forEach((col) -> {
             var bg = (row + col) % 2 == 0 ? WHITE_BG_COLOR : BLACK_BG_COLOR;
             result.append(bg);
