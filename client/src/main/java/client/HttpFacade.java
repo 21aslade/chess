@@ -72,7 +72,6 @@ public class HttpFacade implements ServerFacade {
             var bodyText = body != null ? gson.toJson(body) : null;
             var connection = createRequest(url, method, authToken, bodyText);
 
-            connection.connect();
 
             throwIfNotSuccessful(connection);
             return responseClass != null ? readBody(connection, responseClass) : null;
@@ -117,7 +116,7 @@ public class HttpFacade implements ServerFacade {
             throw new ServerException("An unexpected error has occurred.");
         }
 
-        try (var response = connection.getInputStream()) {
+        try (var response = connection.getErrorStream()) {
             var reader = new InputStreamReader(response);
             var error = gson.fromJson(reader, ResponseExceptionBody.class);
             throw new ServerException(error.message());

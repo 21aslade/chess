@@ -67,7 +67,8 @@ public class Server {
         } catch (ServiceException e) {
             throw switch (e.kind()) {
                 case AlreadyExists -> new ResponseException(403, "Error: already taken");
-                case DoesNotExist, NullInput -> new ResponseException(400, "Error: bad request");
+                case NullInput -> new ResponseException(400, "Error: bad request");
+                case DoesNotExist -> new ResponseException(400, "Error: does not exist");
                 case Unauthorized -> new ResponseException(401, "Error: unauthorized");
             };
         }

@@ -155,10 +155,7 @@ public class Repl {
         var team = switch (args[1].toLowerCase()) {
             case "white" -> TeamColor.WHITE;
             case "black" -> TeamColor.BLACK;
-            default -> {
-                System.err.println(args[1].toLowerCase());
-                yield null;
-            }
+            default -> null;
         };
 
         if (team == null) {
