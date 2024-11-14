@@ -3,7 +3,6 @@ package ui;
 import chess.ChessBoard;
 import chess.ChessGame.TeamColor;
 import chess.ChessPiece;
-import chess.ChessPiece.PieceType;
 import chess.ChessPosition;
 
 import java.util.List;

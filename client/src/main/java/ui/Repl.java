@@ -1,7 +1,7 @@
 package ui;
 
 import chess.ChessBoard;
-import chess.ChessGame;
+import chess.ChessGame.TeamColor;
 import client.Client;
 import model.UserData;
 
@@ -20,6 +20,7 @@ public class Repl {
         new ReplCommand("create", List.of("gameName"), "create new game", Repl::handleCreate),
         new ReplCommand("list", List.of(), "list all games", Repl::handleList),
         new ReplCommand("observe", List.of("gameId"), "observe chess game", Repl::handleObserve),
+        new ReplCommand("join", List.of("gameId", "white|black"), "join chess game", Repl::handleJoin),
         new ReplCommand("logout", List.of(), "end session", Repl::handleLogout),
         new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
@@ -117,11 +118,12 @@ public class Repl {
         return list.stream()
             .map((g) -> "\n - " +
                 g.gameName() +
-                " -" +
-                (g.whiteUsername() != null ? " white: " + g.whiteUsername() : "") +
-                (g.blackUsername() != null ? " black: " + g.blackUsername() : "") +
-                " id" +
-                g.gameID())
+                " (" +
+                (g.whiteUsername() != null ? "white: " + g.whiteUsername() + ", " : "") +
+                (g.blackUsername() != null ? "black: " + g.blackUsername() + ", " : "") +
+                "id: " +
+                g.gameID() +
+                ")")
             .reduce("Games:", (a, b) -> a + b);
     }
 
@@ -137,9 +139,39 @@ public class Repl {
 
         var board = new ChessBoard();
         board.resetBoard();
-        return PrintBoard.printBoard(board, ChessGame.TeamColor.WHITE) +
+        return PrintBoard.printBoard(board, TeamColor.WHITE) +
             "\n" +
-            PrintBoard.printBoard(board, ChessGame.TeamColor.BLACK);
+            PrintBoard.printBoard(board, TeamColor.BLACK);
+    }
+
+    private static String handleJoin(Client client, String[] args) {
+        int gameId;
+        try {
+            gameId = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            return "id must be a valid integer";
+        }
+
+        var team = switch (args[1].toLowerCase()) {
+            case "white" -> TeamColor.WHITE;
+            case "black" -> TeamColor.BLACK;
+            default -> {
+                System.err.println(args[1].toLowerCase());
+                yield null;
+            }
+        };
+
+        if (team == null) {
+            return "team must be white or black";
+        }
+
+        client.joinGame(gameId, team);
+
+        var board = new ChessBoard();
+        board.resetBoard();
+        return PrintBoard.printBoard(board, TeamColor.WHITE) +
+            "\n" +
+            PrintBoard.printBoard(board, TeamColor.BLACK);
     }
 
     private interface ReplAction {

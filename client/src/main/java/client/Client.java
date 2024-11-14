@@ -54,7 +54,7 @@ public class Client {
     }
 
     public void joinGame(int id, TeamColor team) {
-
+        server.joinGame(session.authToken(), id, team);
     }
 
     public void quit() {
