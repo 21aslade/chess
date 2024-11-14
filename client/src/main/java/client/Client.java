@@ -36,4 +36,15 @@ public class Client {
     public void login(String username, String password) {
         session = server.login(username, password);
     }
+
+    public void logout() {
+        server.logout(session.authToken());
+        session = null;
+    }
+
+    public void quit() {
+        if (session != null) {
+            logout();
+        }
+    }
 }
