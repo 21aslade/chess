@@ -51,7 +51,7 @@ public class Repl {
 
     private static String runCommand(Client client, String line) {
         var commands = availableCommands(client);
-        var command = line.split(" ", 2);
+        var command = line.trim().split(" ", 2);
 
         var chosenCommand = commands.stream()
             .filter((c) -> c.name().equals(command[0]))
