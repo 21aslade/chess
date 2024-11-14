@@ -115,7 +115,13 @@ public class Repl {
         }
 
         return list.stream()
-            .map((g) -> "\n - " + g.gameName() + " (id " + g.gameID() + ")")
+            .map((g) -> "\n - " +
+                g.gameName() +
+                " -" +
+                (g.whiteUsername() != null ? " white: " + g.whiteUsername() : "") +
+                (g.blackUsername() != null ? " black: " + g.blackUsername() : "") +
+                " id" +
+                g.gameID())
             .reduce("Games:", (a, b) -> a + b);
     }
 
