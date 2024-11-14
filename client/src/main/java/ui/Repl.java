@@ -1,7 +1,7 @@
 package ui;
 
 import client.Client;
-import client.ServerException;
+import model.UserData;
 
 import java.util.List;
 import java.util.Scanner;
@@ -10,8 +10,8 @@ public class Repl {
     private static final List<ReplCommand> loggedOutCommands = List.of(
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp),
         new ReplCommand("quit", List.of(), "quit the repl", (_c, _a) -> null),
-        new ReplCommand("register", List.of("username", "password", "email"), "create account", (_c, _a) -> ""),
-        new ReplCommand("login", List.of("username", "password"), "log in to play chess", (_c, _a) -> "")
+        new ReplCommand("register", List.of("username", "password", "email"), "create account", Repl::handleRegister),
+        new ReplCommand("login", List.of("username", "password"), "log in to play chess", Repl::handleLogin)
     );
 
     private static final List<ReplCommand> loggedInCommands = List.of(
@@ -56,7 +56,11 @@ public class Repl {
             return "Usage: " + chosenCommand.usageText();
         }
 
-        return chosenCommand.action().run(client, args);
+        try {
+            return chosenCommand.action().run(client, args);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
 
     private static List<ReplCommand> availableCommands(Client client) {
@@ -69,6 +73,17 @@ public class Repl {
 
     private static String handleHelp(Client client, String[] _args) {
         return helpText(availableCommands(client));
+    }
+
+    private static String handleRegister(Client client, String[] args) {
+        var userData = new UserData(args[0], args[1], args[2]);
+        client.register(userData);
+        return "Welcome, " + args[0] + "!";
+    }
+
+    private static String handleLogin(Client client, String[] args) {
+        client.login(args[0], args[1]);
+        return "Welcome, " + args[0] + "!";
     }
 
     private interface ReplAction {
