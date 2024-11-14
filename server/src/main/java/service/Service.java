@@ -40,7 +40,7 @@ public class Service {
         var dbUser = data.getUser(username);
 
         if (dbUser == null || !BCrypt.checkpw(password, dbUser.password())) {
-            throw new ServiceException(ErrorKind.Unauthorized);
+            throw new ServiceException(ErrorKind.LoginFail);
         }
 
         return createSession(username, data);

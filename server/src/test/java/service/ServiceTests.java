@@ -57,7 +57,7 @@ public class ServiceTests {
     public void loginNonexistent() {
         var error =
             assertThrows(ServiceException.class, () -> Service.login(user1.username(), user1.password(), dataAccess));
-        assertEquals(ErrorKind.Unauthorized, error.kind());
+        assertEquals(ErrorKind.LoginFail, error.kind());
     }
 
     @Test
@@ -170,7 +170,7 @@ public class ServiceTests {
 
         var loginError =
             assertThrows(ServiceException.class, () -> Service.login(user1.username(), user1.password(), dataAccess));
-        assertEquals(ErrorKind.Unauthorized, loginError.kind());
+        assertEquals(ErrorKind.LoginFail, loginError.kind());
 
         var logoutError = assertThrows(ServiceException.class, () -> Service.logout(auth1.authToken(), dataAccess));
         assertEquals(ErrorKind.Unauthorized, logoutError.kind());

@@ -7,6 +7,7 @@ public class ServiceException extends Exception {
         AlreadyExists,
         DoesNotExist,
         Unauthorized,
+        LoginFail,
         NullInput
     }
 

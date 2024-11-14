@@ -70,6 +70,7 @@ public class Server {
                 case NullInput -> new ResponseException(400, "Error: bad request");
                 case DoesNotExist -> new ResponseException(400, "Error: does not exist");
                 case Unauthorized -> new ResponseException(401, "Error: unauthorized");
+                case LoginFail -> new ResponseException(401, "Error: incorrect username or password");
             };
         }
     }
