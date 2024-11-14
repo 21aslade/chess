@@ -11,7 +11,7 @@ public class Client {
     private final ServerFacade server;
     private AuthData session;
     private GameData game;
-    private List<GameData> games = List.of();
+    private List<GameData> games;
 
     public enum State {
         LOGGED_OUT,
@@ -46,8 +46,8 @@ public class Client {
         session = null;
     }
 
-    public int createGame(String name) {
-        return server.createGame(session.authToken(), name);
+    public void createGame(String name) {
+        server.createGame(session.authToken(), name);
     }
 
     public List<GameData> listGames() {
@@ -55,14 +55,27 @@ public class Client {
         return games;
     }
 
-    public void observeGame(int id) {
-        if (games.stream().noneMatch((g) -> g.gameID() == id)) {
-            throw new ServerException("Error: does not exist");
+    public void observeGame(int number) {
+        if (games == null) {
+            throw new ServerException("Error: list games first");
+        }
+
+        if (number < 1 || number > games.size()) {
+            throw new ServerException("Error: invalid game index");
         }
     }
 
-    public void joinGame(int id, TeamColor team) {
-        server.joinGame(session.authToken(), id, team);
+    public void joinGame(int number, TeamColor team) {
+        if (games == null) {
+            throw new ServerException("Error: list games first");
+        }
+
+        if (number < 1 || number > games.size()) {
+            throw new ServerException("Error: invalid game index");
+        }
+
+        var game = games.get(number - 1);
+        server.joinGame(session.authToken(), game.gameID(), team);
     }
 
     public void quit() {

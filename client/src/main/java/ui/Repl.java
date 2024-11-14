@@ -3,6 +3,7 @@ package ui;
 import chess.ChessBoard;
 import chess.ChessGame.TeamColor;
 import client.Client;
+import model.GameData;
 import model.UserData;
 
 import java.util.List;
@@ -19,8 +20,8 @@ public class Repl {
     private static final List<ReplCommand> LOGGED_IN_COMMANDS = List.of(
         new ReplCommand("create", List.of("gameName"), "create new game", Repl::handleCreate),
         new ReplCommand("list", List.of(), "list all games", Repl::handleList),
-        new ReplCommand("observe", List.of("gameId"), "observe chess game", Repl::handleObserve),
-        new ReplCommand("join", List.of("gameId", "white|black"), "join chess game", Repl::handleJoin),
+        new ReplCommand("observe", List.of("id"), "observe chess game", Repl::handleObserve),
+        new ReplCommand("join", List.of("id", "white|black"), "join chess game", Repl::handleJoin),
         new ReplCommand("logout", List.of(), "end session", Repl::handleLogout),
         new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
@@ -32,6 +33,8 @@ public class Repl {
 
     public static void run(Client client) {
         var scanner = new Scanner(System.in);
+
+        System.out.println("Welcome! Type \"help\" for a list of commands.");
 
         while (true) {
             System.out.print("> ");
@@ -105,26 +108,43 @@ public class Repl {
     }
 
     private static String handleCreate(Client client, String[] args) {
-        var id = client.createGame(args[0]);
-        return "Created game " + args[0] + " with id " + id;
+        client.createGame(args[0]);
+        return "Created game " + args[0];
     }
 
     private static String handleList(Client client, String[] args) {
-        var list = client.listGames();
-        if (list.isEmpty()) {
+        var games = client.listGames();
+        if (games.isEmpty()) {
             return "No games found.";
         }
 
-        return list.stream()
-            .map((g) -> "\n - " +
-                g.gameName() +
-                " (" +
-                (g.whiteUsername() != null ? "white: " + g.whiteUsername() + ", " : "") +
-                (g.blackUsername() != null ? "black: " + g.blackUsername() + ", " : "") +
-                "id: " +
-                g.gameID() +
-                ")")
-            .reduce("Games:", (a, b) -> a + b);
+        var result = new StringBuilder().append("Games:");
+        for (var i = 0; i < games.size(); i++) {
+            formatGame(i + 1, games.get(i), result);
+        }
+
+        return result.toString();
+    }
+
+    private static void formatGame(int index, GameData game, StringBuilder result) {
+        result.append("\n ")
+            .append(index)
+            .append(" - ")
+            .append(game.gameName());
+
+        var hasWhite = game.whiteUsername() != null;
+        var hasBlack = game.blackUsername() != null;
+        var hasBoth = hasWhite && hasBlack;
+
+        if (!hasWhite && !hasBlack) {
+            return;
+        }
+
+        result.append(" (")
+            .append(hasWhite ? "white: " + game.whiteUsername() : "")
+            .append(hasBoth ? ", " : "")
+            .append(hasBlack ? "black: " + game.blackUsername() : "")
+            .append(")");
     }
 
     private static String handleObserve(Client client, String[] args) {
@@ -132,7 +152,7 @@ public class Repl {
         try {
             gameId = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
-            return "id must be a valid integer";
+            return "Error: id must be a valid integer";
         }
 
         client.observeGame(gameId);
@@ -145,11 +165,11 @@ public class Repl {
     }
 
     private static String handleJoin(Client client, String[] args) {
-        int gameId;
+        int gameNumber;
         try {
-            gameId = Integer.parseInt(args[0]);
+            gameNumber = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
-            return "id must be a valid integer";
+            return "Error: id must be a valid integer";
         }
 
         var team = switch (args[1].toLowerCase()) {
@@ -159,10 +179,10 @@ public class Repl {
         };
 
         if (team == null) {
-            return "team must be white or black";
+            return "Error: team must be white or black";
         }
 
-        client.joinGame(gameId, team);
+        client.joinGame(gameNumber, team);
 
         var board = new ChessBoard();
         board.resetBoard();
