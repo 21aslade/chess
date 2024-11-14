@@ -4,6 +4,8 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import java.util.List;
+
 public class Client {
     private final ServerFacade server;
     private AuthData session;
@@ -40,6 +42,14 @@ public class Client {
     public void logout() {
         server.logout(session.authToken());
         session = null;
+    }
+
+    public int createGame(String name) {
+        return server.createGame(session.authToken(), name);
+    }
+
+    public List<GameData> listGames() {
+        return server.listGames(session.authToken());
     }
 
     public void quit() {

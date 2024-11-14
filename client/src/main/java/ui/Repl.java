@@ -8,16 +8,18 @@ import java.util.Scanner;
 
 public class Repl {
     private static final List<ReplCommand> loggedOutCommands = List.of(
-        new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp),
-        new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
         new ReplCommand("register", List.of("username", "password", "email"), "create account", Repl::handleRegister),
-        new ReplCommand("login", List.of("username", "password"), "log in to play chess", Repl::handleLogin)
+        new ReplCommand("login", List.of("username", "password"), "log in to play chess", Repl::handleLogin),
+        new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
+        new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
     private static final List<ReplCommand> loggedInCommands = List.of(
-        new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp),
+        new ReplCommand("create", List.of("gameName"), "create new game", Repl::handleCreate),
+        new ReplCommand("list", List.of(), "list all games", Repl::handleList),
+        new ReplCommand("logout", List.of(), "end session", Repl::handleLogout),
         new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
-        new ReplCommand("logout", List.of(), "end session", Repl::handleLogout)
+        new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
     private static final List<ReplCommand> gameCommands = List.of(
@@ -96,6 +98,22 @@ public class Repl {
     private static String handleLogout(Client client, String[] args) {
         client.logout();
         return "Logged out successfully.";
+    }
+
+    private static String handleCreate(Client client, String[] args) {
+        var id = client.createGame(args[0]);
+        return "Created game " + args[0] + " with id " + id;
+    }
+
+    private static String handleList(Client client, String[] _args) {
+        var list = client.listGames();
+        if (list.isEmpty()) {
+            return "No games found.";
+        }
+
+        return list.stream()
+            .map((g) -> "\n - " + g.gameName() + " (id " + g.gameID() + ")")
+            .reduce("Games:", (a, b) -> a + b);
     }
 
     private interface ReplAction {
