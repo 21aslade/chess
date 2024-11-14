@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Repl {
-    private static final List<ReplCommand> loggedOutCommands = List.of(
+    private static final List<ReplCommand> LOGGED_OUT_COMMANDS = List.of(
         new ReplCommand("register", List.of("username", "password", "email"), "create account", Repl::handleRegister),
         new ReplCommand("login", List.of("username", "password"), "log in to play chess", Repl::handleLogin),
         new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
-    private static final List<ReplCommand> loggedInCommands = List.of(
+    private static final List<ReplCommand> LOGGED_IN_COMMANDS = List.of(
         new ReplCommand("create", List.of("gameName"), "create new game", Repl::handleCreate),
         new ReplCommand("list", List.of(), "list all games", Repl::handleList),
         new ReplCommand("observe", List.of("gameId"), "observe chess game", Repl::handleObserve),
@@ -26,7 +26,7 @@ public class Repl {
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
-    private static final List<ReplCommand> gameCommands = List.of(
+    private static final List<ReplCommand> GAME_COMMANDS = List.of(
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
@@ -73,17 +73,17 @@ public class Repl {
 
     private static List<ReplCommand> availableCommands(Client client) {
         return switch (client.state()) {
-            case LOGGED_OUT -> loggedOutCommands;
-            case LOGGED_IN -> loggedInCommands;
-            case PLAYING -> gameCommands;
+            case LOGGED_OUT -> LOGGED_OUT_COMMANDS;
+            case LOGGED_IN -> LOGGED_IN_COMMANDS;
+            case PLAYING -> GAME_COMMANDS;
         };
     }
 
-    private static String handleHelp(Client client, String[] _args) {
+    private static String handleHelp(Client client, String[] args) {
         return helpText(availableCommands(client));
     }
 
-    private static String handleQuit(Client client, String[] _args) {
+    private static String handleQuit(Client client, String[] args) {
         client.quit();
         return null;
     }
@@ -109,7 +109,7 @@ public class Repl {
         return "Created game " + args[0] + " with id " + id;
     }
 
-    private static String handleList(Client client, String[] _args) {
+    private static String handleList(Client client, String[] args) {
         var list = client.listGames();
         if (list.isEmpty()) {
             return "No games found.";
