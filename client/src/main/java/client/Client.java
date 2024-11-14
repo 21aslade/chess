@@ -11,6 +11,7 @@ public class Client {
     private final ServerFacade server;
     private AuthData session;
     private GameData game;
+    private List<GameData> games = List.of();
 
     public enum State {
         LOGGED_OUT,
@@ -50,7 +51,14 @@ public class Client {
     }
 
     public List<GameData> listGames() {
-        return server.listGames(session.authToken());
+        games = server.listGames(session.authToken());
+        return games;
+    }
+
+    public void observeGame(int id) {
+        if (games.stream().noneMatch((g) -> g.gameID() == id)) {
+            throw new ServerException("Error: does not exist");
+        }
     }
 
     public void joinGame(int id, TeamColor team) {

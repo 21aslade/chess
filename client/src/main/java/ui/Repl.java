@@ -135,7 +135,7 @@ public class Repl {
             return "id must be a valid integer";
         }
 
-        client.joinGame(gameId, null);
+        client.observeGame(gameId);
 
         var board = new ChessBoard();
         board.resetBoard();
@@ -166,9 +166,7 @@ public class Repl {
 
         var board = new ChessBoard();
         board.resetBoard();
-        return PrintBoard.printBoard(board, TeamColor.WHITE) +
-            "\n" +
-            PrintBoard.printBoard(board, TeamColor.BLACK);
+        return PrintBoard.printBoard(board, team);
     }
 
     private interface ReplAction {
