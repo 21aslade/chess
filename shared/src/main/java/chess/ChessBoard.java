@@ -16,7 +16,7 @@ import java.util.stream.Stream;
  * signature of the existing methods.
  */
 public class ChessBoard implements ImmutableBoard {
-    static final int BOARD_SIZE = 8;
+    public static final int BOARD_SIZE = 8;
     private ChessPiece[][] pieces = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
 
     public ChessBoard() {}

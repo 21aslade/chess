@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame.TeamColor;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -50,6 +51,10 @@ public class Client {
 
     public List<GameData> listGames() {
         return server.listGames(session.authToken());
+    }
+
+    public void joinGame(int id, TeamColor team) {
+
     }
 
     public void quit() {

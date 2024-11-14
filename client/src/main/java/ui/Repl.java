@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import client.Client;
 import model.UserData;
 
@@ -17,6 +19,7 @@ public class Repl {
     private static final List<ReplCommand> loggedInCommands = List.of(
         new ReplCommand("create", List.of("gameName"), "create new game", Repl::handleCreate),
         new ReplCommand("list", List.of(), "list all games", Repl::handleList),
+        new ReplCommand("observe", List.of("gameId"), "observe chess game", Repl::handleObserve),
         new ReplCommand("logout", List.of(), "end session", Repl::handleLogout),
         new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
@@ -114,6 +117,23 @@ public class Repl {
         return list.stream()
             .map((g) -> "\n - " + g.gameName() + " (id " + g.gameID() + ")")
             .reduce("Games:", (a, b) -> a + b);
+    }
+
+    private static String handleObserve(Client client, String[] args) {
+        int gameId;
+        try {
+            gameId = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            return "id must be a valid integer";
+        }
+
+        client.joinGame(gameId, null);
+
+        var board = new ChessBoard();
+        board.resetBoard();
+        return PrintBoard.printBoard(board, ChessGame.TeamColor.WHITE) +
+            "\n" +
+            PrintBoard.printBoard(board, ChessGame.TeamColor.BLACK);
     }
 
     private interface ReplAction {
