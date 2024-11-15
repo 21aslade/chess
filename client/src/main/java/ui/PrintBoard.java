@@ -49,9 +49,9 @@ public class PrintBoard {
         var result = new StringBuilder().append(header);
 
         var colIndexes = IntStream.range(1, ChessBoard.BOARD_SIZE + 1);
-        var cols = team == TeamColor.WHITE ? colIndexes.map(c -> ChessBoard.BOARD_SIZE - c + 1) : colIndexes;
+        var cols = team == TeamColor.WHITE ? colIndexes : colIndexes.map(c -> ChessBoard.BOARD_SIZE - c + 1);
         cols.forEach((col) -> {
-            var bg = (row + col) % 2 == 0 ? WHITE_BG_COLOR : BLACK_BG_COLOR;
+            var bg = (row + col) % 2 == 1 ? WHITE_BG_COLOR : BLACK_BG_COLOR;
             result.append(bg);
             var piece = board.getPiece(new ChessPosition(row, col));
             result.append(piece(piece));
