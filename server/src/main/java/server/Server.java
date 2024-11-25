@@ -13,6 +13,7 @@ import spark.*;
 import websocket.WebSocketHandler;
 
 public class Server {
+    private final WebSocketHandler ws;
     private final DataAccess data;
     private final Gson gson = new Gson();
 
@@ -23,6 +24,8 @@ public class Server {
             System.err.println("Database initialization failed");
             throw new RuntimeException("Failed to initialize database");
         }
+
+        ws = new WebSocketHandler(data);
     }
 
     public int run(int desiredPort) {
@@ -30,7 +33,7 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        Spark.webSocket("/ws", WebSocketHandler.class);
+        Spark.webSocket("/ws", ws);
 
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
