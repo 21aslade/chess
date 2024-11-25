@@ -10,6 +10,7 @@ import server.ServerInterface.*;
 import service.Service;
 import service.ServiceException;
 import spark.*;
+import websocket.WebSocketHandler;
 
 public class Server {
     private final DataAccess data;
@@ -28,6 +29,8 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/ws", WebSocketHandler.class);
 
         Spark.delete("/db", this::clear);
         Spark.post("/user", this::register);
@@ -76,52 +79,66 @@ public class Server {
     }
 
     private Object register(Request req, Response res) throws ResponseException {
-        return route(req, res, UserData.class, (auth, user) -> {
-            var authData = Service.registerUser(user, data);
-            return gson.toJson(authData);
-        });
+        return route(
+            req, res, UserData.class, (auth, user) -> {
+                var authData = Service.registerUser(user, data);
+                return gson.toJson(authData);
+            }
+        );
     }
 
     private Object login(Request req, Response res) throws ResponseException {
-        return route(req, res, LoginRequest.class, (auth, request) -> {
-            var authData = Service.login(request.username(), request.password(), data);
-            return gson.toJson(authData);
-        });
+        return route(
+            req, res, LoginRequest.class, (auth, request) -> {
+                var authData = Service.login(request.username(), request.password(), data);
+                return gson.toJson(authData);
+            }
+        );
     }
 
     private Object logout(Request req, Response res) throws ResponseException {
-        return route(req, res, null, (auth, request) -> {
-            Service.logout(auth, data);
-            return "{}";
-        });
+        return route(
+            req, res, null, (auth, request) -> {
+                Service.logout(auth, data);
+                return "{}";
+            }
+        );
     }
 
     private Object createGame(Request req, Response res) throws ResponseException {
-        return route(req, res, CreateGameRequest.class, (auth, request) -> {
-            var id = Service.createGame(request.gameName(), auth, data);
-            return gson.toJson(new CreateGameResponse(id));
-        });
+        return route(
+            req, res, CreateGameRequest.class, (auth, request) -> {
+                var id = Service.createGame(request.gameName(), auth, data);
+                return gson.toJson(new CreateGameResponse(id));
+            }
+        );
     }
 
     private Object joinGame(Request req, Response res) throws ResponseException {
-        return route(req, res, JoinGameRequest.class, (auth, request) -> {
-            Service.joinGame(request.gameID(), request.playerColor(), auth, data);
-            return "{}";
-        });
+        return route(
+            req, res, JoinGameRequest.class, (auth, request) -> {
+                Service.joinGame(request.gameID(), request.playerColor(), auth, data);
+                return "{}";
+            }
+        );
     }
 
     private Object listGames(Request req, Response res) throws ResponseException {
-        return route(req, res, null, (auth, request) -> {
-            var games = Service.listGames(auth, data);
-            return gson.toJson(new ListGamesResponse(games));
-        });
+        return route(
+            req, res, null, (auth, request) -> {
+                var games = Service.listGames(auth, data);
+                return gson.toJson(new ListGamesResponse(games));
+            }
+        );
     }
 
     private Object clear(Request req, Response res) throws ResponseException {
-        return route(req, res, null, (auth, request) -> {
-            Service.clear(data);
-            return "{}";
-        });
+        return route(
+            req, res, null, (auth, request) -> {
+                Service.clear(data);
+                return "{}";
+            }
+        );
     }
 
     private interface HandlerFunction<T> {
