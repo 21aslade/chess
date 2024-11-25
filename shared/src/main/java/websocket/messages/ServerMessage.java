@@ -8,7 +8,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you should not alter the existing
  * methods.
  */
-public class ServerMessage {
+public sealed class ServerMessage permits LoadGameMessage, NotificationMessage {
     ServerMessageType serverMessageType;
 
     public enum ServerMessageType {
