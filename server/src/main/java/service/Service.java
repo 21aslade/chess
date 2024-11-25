@@ -2,6 +2,8 @@ package service;
 
 import chess.ChessGame;
 import chess.ChessGame.TeamColor;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
@@ -33,9 +35,8 @@ public class Service {
         return createSession(dbUser.username(), data);
     }
 
-    public static AuthData login(String username, String password, DataAccess data) throws
-        DataAccessException,
-        ServiceException {
+    public static AuthData login(String username, String password, DataAccess data)
+        throws DataAccessException, ServiceException {
         verifyNonNull(username, password);
         var dbUser = data.getUser(username);
 
@@ -52,26 +53,23 @@ public class Service {
         data.deleteAuth(authToken);
     }
 
-    public static int createGame(String gameName, String authToken, DataAccess data) throws
-        DataAccessException,
-        ServiceException {
+    public static int createGame(String gameName, String authToken, DataAccess data)
+        throws DataAccessException, ServiceException {
         verifyNonNull(gameName, authToken);
         Service.verifyAuth(authToken, data);
 
         return data.createGame(gameName, new ChessGame());
     }
 
-    public static List<GameData> listGames(String authToken, DataAccess data) throws
-        DataAccessException,
-        ServiceException {
+    public static List<GameData> listGames(String authToken, DataAccess data)
+        throws DataAccessException, ServiceException {
         verifyNonNull(authToken);
         Service.verifyAuth(authToken, data);
         return data.getGames();
     }
 
-    public static void joinGame(int gameId, TeamColor team, String authToken, DataAccess data) throws
-        DataAccessException,
-        ServiceException {
+    public static void joinGame(int gameId, TeamColor team, String authToken, DataAccess data)
+        throws DataAccessException, ServiceException {
         verifyNonNull(team, authToken, data);
         var auth = Service.verifyAuth(authToken, data);
 
@@ -91,6 +89,24 @@ public class Service {
         }
 
         data.putGame(game.withUser(team, auth.username()));
+    }
+
+    public static void makeMove(int gameId, String authToken, ChessMove move, DataAccess data)
+        throws DataAccessException, ServiceException, InvalidMoveException {
+        var auth = Service.verifyAuth(authToken, data);
+
+        var game = data.getGame(gameId);
+        if (game == null) {
+            throw new ServiceException(ErrorKind.DoesNotExist);
+        }
+
+        var username = auth.username();
+        if (!username.equals(game.user(TeamColor.WHITE)) && !username.equals(game.user(TeamColor.BLACK))) {
+            throw new ServiceException(ErrorKind.Unauthorized);
+        }
+
+        game.game().makeMove(move);
+        data.putGame(game);
     }
 
     public static void clear(DataAccess data) throws DataAccessException {
