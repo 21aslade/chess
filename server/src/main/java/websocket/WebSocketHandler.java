@@ -80,7 +80,7 @@ public class WebSocketHandler {
         throws IOException {
         connection.send(new LoadGameMessage(game.game()));
 
-        var team = getTeam(game, user.username());
+        var team = game.userTeam(user.username());
         var message = team != null ? "player " + user.username() + " joined as " + team : user.username() +
             " is now observing the game";
         connections.add(connection);
@@ -104,16 +104,6 @@ public class WebSocketHandler {
 
         if (message != null) {
             connections.broadcast(null, new NotificationMessage(message));
-        }
-    }
-
-    private TeamColor getTeam(GameData game, String username) {
-        if (username.equals(game.whiteUsername())) {
-            return TeamColor.WHITE;
-        } else if (username.equals(game.blackUsername())) {
-            return TeamColor.BLACK;
-        } else {
-            return null;
         }
     }
 }

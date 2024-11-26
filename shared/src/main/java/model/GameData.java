@@ -17,4 +17,14 @@ public record GameData(int gameID, String whiteUsername, String blackUsername, S
             case BLACK -> new GameData(gameID, whiteUsername, username, gameName, game);
         };
     }
+
+    public TeamColor userTeam(String username) {
+        if (username.equals(this.whiteUsername)) {
+            return TeamColor.WHITE;
+        } else if (username.equals(this.blackUsername)) {
+            return TeamColor.BLACK;
+        } else {
+            return null;
+        }
+    }
 }
