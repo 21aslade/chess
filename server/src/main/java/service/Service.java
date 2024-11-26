@@ -91,6 +91,23 @@ public class Service {
         data.putGame(game.withUser(team, auth.username()));
     }
 
+    public static GameData getGame(int gameId, String authToken, DataAccess data)
+        throws ServiceException, DataAccessException {
+        Service.verifyAuth(authToken, data);
+
+        var game = data.getGame(gameId);
+        if (game == null) {
+            throw new ServiceException(ErrorKind.DoesNotExist);
+        }
+
+        return game;
+    }
+
+    public static UserData getUser(String authToken, DataAccess data) throws ServiceException, DataAccessException {
+        var auth = Service.verifyAuth(authToken, data);
+        return data.getUser(auth.username());
+    }
+
     public static void makeMove(int gameId, String authToken, ChessMove move, DataAccess data)
         throws DataAccessException, ServiceException, InvalidMoveException {
         var auth = Service.verifyAuth(authToken, data);
