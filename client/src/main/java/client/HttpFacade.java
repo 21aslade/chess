@@ -8,14 +8,16 @@ import model.UserData;
 import server.ServerInterface.*;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 
 public class HttpFacade implements ServerFacade {
+    private final HttpClient client = HttpClient.newHttpClient();
     private final Gson gson = new Gson();
     private final String baseUrl;
 
@@ -66,61 +68,43 @@ public class HttpFacade implements ServerFacade {
 
     private <T> T makeRequest(String method, String path, String authToken, Object body, Class<T> responseClass) throws
         ServerException {
+        var uri = URI.create(baseUrl + path);
+        var bodyText = body != null ? gson.toJson(body) : null;
+        var request = createRequest(uri, method, authToken, bodyText);
+
         try {
-            var url = (new URI(baseUrl + path)).toURL();
-
-            var bodyText = body != null ? gson.toJson(body) : null;
-            var connection = createRequest(url, method, authToken, bodyText);
-
-
-            throwIfNotSuccessful(connection);
-            return responseClass != null ? readBody(connection, responseClass) : null;
-        } catch (Exception ex) {
+            var response = client.send(request, BodyHandlers.ofString());
+            return handleResponse(response, responseClass);
+        } catch (IOException | InterruptedException ex) {
             throw new ServerException(ex.getMessage());
         }
     }
 
-    private HttpURLConnection createRequest(URL url, String method, String authToken, String body) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(method);
-        connection.setDoOutput(true);
+    private HttpRequest createRequest(URI uri, String method, String authToken, String body) {
+        var bodyPublisher = body != null ? BodyPublishers.ofString(body) : BodyPublishers.noBody();
+        var request = HttpRequest.newBuilder(uri)
+            .method(method, bodyPublisher);
 
         if (authToken != null) {
-            connection.setRequestProperty("authorization", authToken);
+            request.setHeader("authorization", authToken);
         }
 
         if (body != null) {
-            connection.addRequestProperty("Content-Type", "application/json");
-            try (OutputStream reqBody = connection.getOutputStream()) {
-                reqBody.write(body.getBytes());
-            }
+            request.setHeader("Content-Type", "application/json");
         }
 
-        return connection;
+        return request.build();
     }
 
-    private <T> T readBody(HttpURLConnection connection, Class<T> responseClass) throws IOException {
-        try (var response = connection.getInputStream()) {
-            var reader = new InputStreamReader(response);
-            return gson.fromJson(reader, responseClass);
-        }
-    }
-
-    private void throwIfNotSuccessful(HttpURLConnection connection) throws IOException {
-        var status = connection.getResponseCode();
-        if (isSuccessful(status)) {
-            return;
-        }
-
-        if (connection.getContentLengthLong() == 0) {
-            throw new ServerException("An unexpected error has occurred.");
-        }
-
-        try (var response = connection.getErrorStream()) {
-            var reader = new InputStreamReader(response);
-            var error = gson.fromJson(reader, ResponseExceptionBody.class);
+    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) {
+        if (!isSuccessful(response.statusCode())) {
+            var error = gson.fromJson(response.body(), ResponseExceptionBody.class);
             throw new ServerException(error.message());
         }
+        if (responseClass == null) {
+            return null;
+        }
+        return gson.fromJson(response.body(), responseClass);
     }
 
     private boolean isSuccessful(int status) {
