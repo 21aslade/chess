@@ -13,15 +13,54 @@ import java.util.stream.Stream;
  * signature of the existing methods.
  */
 public class ChessGame {
+    private GameStatus status = GameStatus.PLAY;
     private ChessBoard board;
     private TeamColor turn = TeamColor.WHITE;
     private ChessPosition whiteKingPosition;
     private ChessPosition blackKingPosition;
 
+    public enum GameStatus {
+        PLAY,
+        CHECK,
+        CHECKMATE,
+        STALEMATE,
+        FORFEIT;
+
+        public boolean canPlay() {
+            return this == GameStatus.PLAY || this == GameStatus.CHECK;
+        }
+    }
+
     public ChessGame() {
         var board = new ChessBoard();
         board.resetBoard();
         this.setBoard(board);
+    }
+
+    public GameStatus status() {
+        return this.status;
+    }
+
+    private GameStatus computeStatus() {
+        if (this.status == GameStatus.FORFEIT) {
+            return GameStatus.FORFEIT;
+        }
+
+        var check = this.isInCheck(this.turn);
+        var canMove = this.canMove(this.turn);
+        if (check) {
+            if (canMove) {
+                return GameStatus.CHECK;
+            } else {
+                return GameStatus.CHECKMATE;
+            }
+        } else {
+            if (canMove) {
+                return GameStatus.PLAY;
+            } else {
+                return GameStatus.STALEMATE;
+            }
+        }
     }
 
     /**
@@ -38,6 +77,7 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         this.turn = team;
+        this.status = this.computeStatus();
     }
 
     /**
@@ -77,6 +117,10 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (!this.status().canPlay()) {
+            throw new InvalidMoveException();
+        }
+
         var piece = this.board.getPiece(move.startPosition());
         if (piece == null || this.turn != piece.pieceColor()) {
             throw new InvalidMoveException();
@@ -97,6 +141,13 @@ public class ChessGame {
         }
 
         this.turn = this.turn.opposite();
+
+        this.status = this.computeStatus();
+    }
+
+    public void forfeit(TeamColor team) {
+        this.status = GameStatus.FORFEIT;
+        this.turn = team;
     }
 
     /**
@@ -121,7 +172,11 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return this.isInCheck(teamColor) && !this.canMove(teamColor);
+        if (teamColor == this.turn) {
+            return this.status == GameStatus.CHECKMATE;
+        } else {
+            return this.isInCheck(teamColor) && !this.canMove(teamColor);
+        }
     }
 
     /**
@@ -132,7 +187,11 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return !this.isInCheck(teamColor) && !this.canMove(teamColor);
+        if (teamColor == this.turn) {
+            return this.status == GameStatus.STALEMATE;
+        } else {
+            return !this.isInCheck(teamColor) && !this.canMove(teamColor);
+        }
     }
 
     private boolean canMove(TeamColor team) {
