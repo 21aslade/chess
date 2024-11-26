@@ -12,6 +12,7 @@ import service.Service;
 import service.ServiceException;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import model.GameData;
@@ -50,7 +51,7 @@ public class WebSocketHandler {
                 case RESIGN -> {}
             }
         } catch (IOException | DataAccessException e) {
-            var message = new NotificationMessage("Error: an unexpected error has occurred", true);
+            var message = new ErrorMessage("Error: an unexpected error has occurred");
             connection.send(message);
         } catch (ServiceException e) {
             var messageText = switch (e.kind()) {
@@ -60,7 +61,7 @@ public class WebSocketHandler {
                 default -> "Error: an unexpected error has occurred";
             };
 
-            connection.send(new NotificationMessage(messageText, true));
+            connection.send(new ErrorMessage(messageText));
         }
     }
 
@@ -80,7 +81,7 @@ public class WebSocketHandler {
         var message = team != null ? "player " + user.username() + " joined as " + team : user.username() +
             " is now observing the game";
         connections.add(connection);
-        connections.broadcast(connection.id, new NotificationMessage(message, false));
+        connections.broadcast(connection.id, new NotificationMessage(message));
     }
 
     private TeamColor getTeam(GameData game, String username) {
