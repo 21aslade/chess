@@ -100,8 +100,9 @@ public class Service {
             throw new ServiceException(ErrorKind.DoesNotExist);
         }
 
+        var expectedColor = game.game().getBoard().getPiece(move.startPosition()).pieceColor();
         var username = auth.username();
-        if (!username.equals(game.user(TeamColor.WHITE)) && !username.equals(game.user(TeamColor.BLACK))) {
+        if (!username.equals(game.user(expectedColor))) {
             throw new ServiceException(ErrorKind.Unauthorized);
         }
 
