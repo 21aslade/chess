@@ -108,8 +108,10 @@ public class Service {
         return data.getUser(auth.username());
     }
 
-    public static void makeMove(int gameId, String authToken, ChessMove move, DataAccess data)
+    public static ChessGame makeMove(int gameId, String authToken, ChessMove move, DataAccess data)
         throws DataAccessException, ServiceException, InvalidMoveException {
+        verifyNonNull(move);
+        verifyNonNull(move.startPosition(), move.endPosition());
         var auth = Service.verifyAuth(authToken, data);
 
         var game = data.getGame(gameId);
@@ -125,6 +127,8 @@ public class Service {
 
         game.game().makeMove(move);
         data.putGame(game);
+
+        return game.game();
     }
 
     public static void clear(DataAccess data) throws DataAccessException {

@@ -1,6 +1,7 @@
 package websocket;
 
 import chess.ChessGame.TeamColor;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -46,7 +47,7 @@ public class WebSocketHandler {
             var user = Service.getUser(command.getAuthToken(), data);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(connections, connection, game, user);
-                case MAKE_MOVE -> {}
+                case MAKE_MOVE -> move(connections, (MakeMoveCommand) command, data, user);
                 case LEAVE -> {}
                 case RESIGN -> {}
             }
@@ -62,6 +63,8 @@ public class WebSocketHandler {
             };
 
             connection.send(new ErrorMessage(messageText));
+        } catch (InvalidMoveException e) {
+            connection.send(new ErrorMessage("Error: invalid move"));
         }
     }
 
@@ -82,6 +85,26 @@ public class WebSocketHandler {
             " is now observing the game";
         connections.add(connection);
         connections.broadcast(connection.id, new NotificationMessage(message));
+    }
+
+    private void move(ConnectionManager connections, MakeMoveCommand move, DataAccess data, UserData user)
+        throws ServiceException, DataAccessException, InvalidMoveException, IOException {
+        var game = Service.makeMove(move.getGameID(), move.getAuthToken(), move.move(), data);
+        connections.broadcast(null, new LoadGameMessage(game));
+
+        var moveMessage = user.username() + " made move " + move;
+        connections.broadcast(move.getAuthToken(), new NotificationMessage(moveMessage));
+
+        var message = switch (game.status()) {
+            case CHECK -> game.getTeamTurn() + " is in check!";
+            case CHECKMATE -> game.getTeamTurn().opposite() + " wins!";
+            case STALEMATE -> game.getTeamTurn() + " can't move. Stalemate!";
+            default -> null;
+        };
+
+        if (message != null) {
+            connections.broadcast(null, new NotificationMessage(message));
+        }
     }
 
     private TeamColor getTeam(GameData game, String username) {
