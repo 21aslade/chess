@@ -131,6 +131,24 @@ public class Service {
         return game.game();
     }
 
+    public static void leaveGame(int gameId, String authToken, DataAccess data)
+        throws ServiceException, DataAccessException {
+        var auth = Service.verifyAuth(authToken, data);
+
+        var game = data.getGame(gameId);
+        if (game == null) {
+            throw new ServiceException(ErrorKind.DoesNotExist);
+        }
+
+        var team = game.userTeam(auth.username());
+        if (team == null) {
+            return;
+        }
+
+        var newGame = game.withUser(team, null);
+        data.putGame(newGame);
+    }
+
     public static void clear(DataAccess data) throws DataAccessException {
         data.clearUsers();
         data.clearAuth();

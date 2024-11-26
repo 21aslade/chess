@@ -1,6 +1,5 @@
 package websocket;
 
-import chess.ChessGame.TeamColor;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
@@ -48,7 +47,7 @@ public class WebSocketHandler {
             switch (command.getCommandType()) {
                 case CONNECT -> connect(connections, connection, game, user);
                 case MAKE_MOVE -> move(connections, (MakeMoveCommand) command, data, user);
-                case LEAVE -> {}
+                case LEAVE -> leave(connections, command.getAuthToken(), data, game.gameID(), user);
                 case RESIGN -> {}
             }
         } catch (IOException | DataAccessException e) {
@@ -105,5 +104,13 @@ public class WebSocketHandler {
         if (message != null) {
             connections.broadcast(null, new NotificationMessage(message));
         }
+    }
+
+    private void leave(ConnectionManager connections, String authToken, DataAccess data, int game, UserData user)
+        throws ServiceException, DataAccessException, IOException {
+        Service.leaveGame(game, authToken, data);
+        var message = user.username() + " left the game";
+        connections.remove(authToken);
+        connections.broadcast(authToken, new NotificationMessage(message));
     }
 }
