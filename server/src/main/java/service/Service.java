@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import chess.ChessGame.GameStatus;
 import chess.ChessGame.TeamColor;
 import chess.ChessMove;
 import chess.InvalidMoveException;
@@ -147,6 +148,28 @@ public class Service {
 
         var newGame = game.withUser(team, null);
         data.putGame(newGame);
+    }
+
+    public static void resignGame(int gameId, String authToken, DataAccess data)
+        throws ServiceException, DataAccessException {
+        var auth = Service.verifyAuth(authToken, data);
+
+        var game = data.getGame(gameId);
+        if (game == null) {
+            throw new ServiceException(ErrorKind.DoesNotExist);
+        }
+
+        if (game.game().status() == GameStatus.RESIGN) {
+            throw new ServiceException(ErrorKind.AlreadyExists);
+        }
+
+        var team = game.userTeam(auth.username());
+        if (team == null) {
+            throw new ServiceException(ErrorKind.Unauthorized);
+        }
+
+        game.game().resign(team);
+        data.putGame(game);
     }
 
     public static void clear(DataAccess data) throws DataAccessException {

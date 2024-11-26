@@ -24,7 +24,7 @@ public class ChessGame {
         CHECK,
         CHECKMATE,
         STALEMATE,
-        FORFEIT;
+        RESIGN;
 
         public boolean canPlay() {
             return this == GameStatus.PLAY || this == GameStatus.CHECK;
@@ -42,8 +42,8 @@ public class ChessGame {
     }
 
     private GameStatus computeStatus() {
-        if (this.status == GameStatus.FORFEIT) {
-            return GameStatus.FORFEIT;
+        if (this.status == GameStatus.RESIGN) {
+            return GameStatus.RESIGN;
         }
 
         var check = this.isInCheck(this.turn);
@@ -145,8 +145,8 @@ public class ChessGame {
         this.status = this.computeStatus();
     }
 
-    public void forfeit(TeamColor team) {
-        this.status = GameStatus.FORFEIT;
+    public void resign(TeamColor team) {
+        this.status = GameStatus.RESIGN;
         this.turn = team;
     }
 

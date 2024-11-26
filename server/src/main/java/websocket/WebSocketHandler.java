@@ -41,24 +41,26 @@ public class WebSocketHandler {
             managers.put(command.getGameID(), connections);
         }
 
+        var auth = command.getAuthToken();
+
         try {
-            var game = Service.getGame(command.getGameID(), command.getAuthToken(), data);
-            var user = Service.getUser(command.getAuthToken(), data);
+            var game = Service.getGame(command.getGameID(), auth, data);
+            var user = Service.getUser(auth, data);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(connections, connection, game, user);
                 case MAKE_MOVE -> move(connections, (MakeMoveCommand) command, data, user);
-                case LEAVE -> leave(connections, command.getAuthToken(), data, game.gameID(), user);
-                case RESIGN -> {}
+                case LEAVE -> leave(connections, auth, data, game.gameID(), user);
+                case RESIGN -> resign(connections, auth, data, game.gameID(), user);
             }
         } catch (IOException | DataAccessException e) {
             var message = new ErrorMessage("Error: an unexpected error has occurred");
             connection.send(message);
         } catch (ServiceException e) {
             var messageText = switch (e.kind()) {
+                case AlreadyExists -> "Error: cannot resign twice";
                 case DoesNotExist -> "Error: game does not exist";
                 case Unauthorized, LoginFail -> "Error: unauthorized";
                 case NullInput -> "Error: bad request";
-                default -> "Error: an unexpected error has occurred";
             };
 
             connection.send(new ErrorMessage(messageText));
@@ -112,5 +114,12 @@ public class WebSocketHandler {
         var message = user.username() + " left the game";
         connections.remove(authToken);
         connections.broadcast(authToken, new NotificationMessage(message));
+    }
+
+    private void resign(ConnectionManager connections, String authToken, DataAccess data, int game, UserData user)
+        throws ServiceException, DataAccessException, IOException {
+        Service.resignGame(game, authToken, data);
+        var message = user.username() + " has resigned.";
+        connections.broadcast(null, new NotificationMessage(message));
     }
 }
