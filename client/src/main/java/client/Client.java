@@ -82,7 +82,7 @@ public class Client {
         return games;
     }
 
-    public void observeGame(int number) {
+    public TeamColor observeGame(int number) {
         if (games == null) {
             throw new ServerException("Error: list games first");
         }
@@ -91,11 +91,15 @@ public class Client {
             throw new ServerException("Error: invalid game index");
         }
 
-        this.game = games.get(number - 1);
-        this.team = null;
+        var game = games.get(number - 1);
+        this.game = game;
+
+        var team = game.userTeam(this.session.username());
+        this.team = team;
         this.ws = new WsFacade(url, this::handleServerMessage);
 
         ws.connect(this.session.authToken(), game.gameID());
+        return team;
     }
 
     public void joinGame(int number, TeamColor team) {

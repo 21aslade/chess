@@ -177,9 +177,12 @@ public class Repl {
             return "Error: id must be a valid integer";
         }
 
-        client.observeGame(gameId);
-
-        return ERASE_SCREEN;
+        var team = client.observeGame(gameId);
+        if (team != null) {
+            return ERASE_SCREEN + "Already joined as " + team + ".";
+        } else {
+            return ERASE_SCREEN;
+        }
     }
 
     private static String handleJoin(Client client, String[] args) {
