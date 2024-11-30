@@ -59,6 +59,10 @@ public class WsFacade extends Endpoint {
         this.sendCommand(new MakeMoveCommand(auth, gameId, move));
     }
 
+    public void leave(String auth, int gameId) throws ServerException {
+        this.sendCommand(new UserGameCommand(CommandType.LEAVE, auth, gameId));
+    }
+
     private void sendCommand(UserGameCommand command) throws ServerException {
         try {
             this.session.getBasicRemote().sendText(gson.toJson(command));

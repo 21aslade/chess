@@ -40,6 +40,8 @@ public class Repl {
     private static final List<ReplCommand> GAME_COMMANDS = List.of(
         new ReplCommand("board", List.of(), "show board", Repl::handleBoard),
         new ReplCommand("highlight", List.of("pos"), "highlight the moves a piece can make", Repl::handleHighlight),
+        new ReplCommand("leave", List.of(), "leave the game without resigning", Repl::handleLeave),
+        new ReplCommand("quit", List.of(), "quit the repl", Repl::handleQuit),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
@@ -239,6 +241,11 @@ public class Repl {
             return "Error: invalid move";
         }
         return "";
+    }
+
+    private static String handleLeave(Client client, String[] args) {
+        client.leave();
+        return "Successfully left game.";
     }
 
     private static void handleMessage(Client client, ServerMessage message) {

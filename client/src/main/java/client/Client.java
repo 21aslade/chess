@@ -121,7 +121,18 @@ public class Client {
         this.ws.move(session.authToken(), game.gameID(), move);
     }
 
+    public void leave() {
+        this.ws.leave(session.authToken(), game.gameID());
+
+        this.game = null;
+        this.team = null;
+        this.ws = null;
+    }
+
     public void quit() {
+        if (ws != null) {
+            leave();
+        }
         if (session != null) {
             logout();
         }
