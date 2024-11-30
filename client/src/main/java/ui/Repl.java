@@ -5,9 +5,15 @@ import chess.ChessGame.TeamColor;
 import client.Client;
 import model.GameData;
 import model.UserData;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.util.List;
 import java.util.Scanner;
+
+import static ui.EscapeSequences.*;
 
 public class Repl {
     private static final List<ReplCommand> LOGGED_OUT_COMMANDS = List.of(
@@ -28,11 +34,13 @@ public class Repl {
     );
 
     private static final List<ReplCommand> GAME_COMMANDS = List.of(
+        new ReplCommand("board", List.of(), "show board", Repl::handleBoard),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
     public static void run(Client client) {
         var scanner = new Scanner(System.in);
+        client.setWsHandler((m) -> Repl.handleMessage(client, m));
 
         System.out.println("Welcome! Type \"help\" for a list of commands.");
 
@@ -184,9 +192,25 @@ public class Repl {
 
         client.joinGame(gameNumber, team);
 
-        var board = new ChessBoard();
-        board.resetBoard();
-        return PrintBoard.printBoard(board, team);
+        return ERASE_SCREEN;
+    }
+
+    private static String handleBoard(Client client, String[] args) {
+        return PrintBoard.printBoard(client.board(), client.team());
+    }
+
+    private static void handleMessage(Client client, ServerMessage message) {
+        System.out.println();
+        var result = switch (message) {
+            case LoadGameMessage g -> PrintBoard.printBoard(client.board(), client.team());
+            case NotificationMessage n -> n.message();
+            case ErrorMessage e -> SET_TEXT_COLOR_RED + e.message() + SET_TEXT_COLOR_WHITE;
+            default -> throw new IllegalStateException("Unexpected message: " + message);
+        };
+
+        System.out.println(result);
+        System.out.print("> ");
+        System.out.flush();
     }
 
     private interface ReplAction {
