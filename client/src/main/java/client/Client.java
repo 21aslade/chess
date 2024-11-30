@@ -1,16 +1,23 @@
 package client;
 
+import chess.ChessBoard;
 import chess.ChessGame.TeamColor;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ServerMessage;
 
 import java.util.List;
 
 public class Client {
+    private final String url;
     private final ServerFacade server;
+    private WsFacade.Handler wsHandler;
+    private WsFacade ws;
     private AuthData session;
     private GameData game;
+    private TeamColor team;
     private List<GameData> games;
 
     public enum State {
@@ -19,18 +26,31 @@ public class Client {
         PLAYING
     }
 
-    public Client(ServerFacade server) {
-        this.server = server;
+    public Client(String url) {
+        this.url = url;
+        this.server = new HttpFacade(url);
+    }
+
+    public void setWsHandler(WsFacade.Handler handler) {
+        this.wsHandler = handler;
     }
 
     public State state() {
         if (session == null) {
             return State.LOGGED_OUT;
-        } else if (game == null) {
+        } else if (ws == null) {
             return State.LOGGED_IN;
         } else {
             return State.PLAYING;
         }
+    }
+
+    public ChessBoard board() {
+        return this.game != null ? this.game.game().getBoard() : null;
+    }
+
+    public TeamColor team() {
+        return this.team;
     }
 
     public void register(UserData user) {
@@ -76,11 +96,26 @@ public class Client {
 
         var game = games.get(number - 1);
         server.joinGame(session.authToken(), game.gameID(), team);
+
+        this.game = game;
+        this.team = game.userTeam(this.session.username());
+        this.ws = new WsFacade(url, this::handleServerMessage);
+
+        ws.connect(this.session.authToken(), game.gameID());
     }
 
     public void quit() {
         if (session != null) {
             logout();
+        }
+    }
+
+    private void handleServerMessage(ServerMessage message) {
+        if (message instanceof LoadGameMessage m) {
+            this.game = this.game.withGame(m.game());
+        }
+        if (this.wsHandler != null) {
+            this.wsHandler.handleMessage(message);
         }
     }
 }

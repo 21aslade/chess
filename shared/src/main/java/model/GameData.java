@@ -18,6 +18,10 @@ public record GameData(int gameID, String whiteUsername, String blackUsername, S
         };
     }
 
+    public GameData withGame(ChessGame game) {
+        return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
+    }
+
     public TeamColor userTeam(String username) {
         if (username.equals(this.whiteUsername)) {
             return TeamColor.WHITE;
