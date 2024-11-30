@@ -150,7 +150,7 @@ public class Service {
         data.putGame(newGame);
     }
 
-    public static void resignGame(int gameId, String authToken, DataAccess data)
+    public static TeamColor resignGame(int gameId, String authToken, DataAccess data)
         throws ServiceException, DataAccessException {
         var auth = Service.verifyAuth(authToken, data);
 
@@ -170,6 +170,8 @@ public class Service {
 
         game.game().resign(team);
         data.putGame(game);
+        
+        return team;
     }
 
     public static void clear(DataAccess data) throws DataAccessException {

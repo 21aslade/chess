@@ -11,7 +11,6 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
-import javax.websocket.MessageHandler.Whole;
 import java.io.IOException;
 import java.net.URI;
 
@@ -61,6 +60,10 @@ public class WsFacade extends Endpoint {
 
     public void leave(String auth, int gameId) throws ServerException {
         this.sendCommand(new UserGameCommand(CommandType.LEAVE, auth, gameId));
+    }
+
+    public void resign(String auth, int gameId) throws ServerException {
+        this.sendCommand(new UserGameCommand(CommandType.RESIGN, auth, gameId));
     }
 
     private void sendCommand(UserGameCommand command) throws ServerException {

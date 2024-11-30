@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessBoard;
 import chess.ChessGame.TeamColor;
 import chess.ChessMove;
 import chess.ChessPosition;
@@ -45,8 +44,10 @@ public class Repl {
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
-    private static final ReplCommand MOVE_COMMAND =
-        new ReplCommand("move", List.of("src", "dest"), "make move", Repl::handleMove);
+    private static final List<ReplCommand> MOVE_COMMANDS = List.of(
+        new ReplCommand("move", List.of("src", "dest"), "make move", Repl::handleMove),
+        new ReplCommand("resign", List.of(), "resign from the game", Repl::handleResign)
+    );
 
     public static void run(Client client) {
         var scanner = new Scanner(System.in);
@@ -98,7 +99,7 @@ public class Repl {
             case LOGGED_IN -> LOGGED_IN_COMMANDS.stream();
             case PLAYING -> {
                 if (client.canMove()) {
-                    yield Stream.concat(Stream.of(MOVE_COMMAND), GAME_COMMANDS.stream());
+                    yield Stream.concat(MOVE_COMMANDS.stream(), GAME_COMMANDS.stream());
                 } else {
                     yield GAME_COMMANDS.stream();
                 }
@@ -248,10 +249,21 @@ public class Repl {
         return "Successfully left game.";
     }
 
+    private static String handleResign(Client client, String[] args) {
+        System.out.println("Are you sure you want to resign? (y/n) ");
+        var response = new Scanner(System.in).nextLine();
+        if (response.trim().equalsIgnoreCase("y")) {
+            client.resign();
+            return "";
+        }
+
+        return "Resign canceled";
+    }
+
     private static void handleMessage(Client client, ServerMessage message) {
         System.out.println();
         var result = switch (message) {
-            case LoadGameMessage g -> PrintBoard.printBoard(client.board(), client.team());
+            case LoadGameMessage ignored -> PrintBoard.printBoard(client.board(), client.team());
             case NotificationMessage n -> n.message();
             case ErrorMessage e -> SET_TEXT_COLOR_RED + e.message() + SET_TEXT_COLOR_WHITE;
             default -> throw new IllegalStateException("Unexpected message: " + message);

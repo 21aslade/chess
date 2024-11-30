@@ -118,8 +118,8 @@ public class WebSocketHandler {
 
     private void resign(ConnectionManager connections, String authToken, DataAccess data, int game, UserData user)
         throws ServiceException, DataAccessException, IOException {
-        Service.resignGame(game, authToken, data);
+        var team = Service.resignGame(game, authToken, data);
         var message = user.username() + " has resigned.";
-        connections.broadcast(null, new NotificationMessage(message));
+        connections.broadcast(null, new NotificationMessage(message, team));
     }
 }

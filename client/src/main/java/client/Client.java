@@ -8,6 +8,7 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.List;
@@ -129,6 +130,10 @@ public class Client {
         this.ws = null;
     }
 
+    public void resign() {
+        this.ws.resign(session.authToken(), game.gameID());
+    }
+
     public void quit() {
         if (ws != null) {
             leave();
@@ -139,8 +144,15 @@ public class Client {
     }
 
     private void handleServerMessage(ServerMessage message) {
-        if (message instanceof LoadGameMessage m) {
-            this.game = this.game.withGame(m.game());
+        switch (message) {
+            case LoadGameMessage m -> this.game = this.game.withGame(m.game());
+            case NotificationMessage m -> {
+                var resign = m.resign();
+                if (resign != null) {
+                    this.game.game().resign(resign);
+                }
+            }
+            default -> {}
         }
         if (this.wsHandler != null) {
             this.wsHandler.handleMessage(message);
