@@ -179,11 +179,7 @@ public class Repl {
 
         client.observeGame(gameId);
 
-        var board = new ChessBoard();
-        board.resetBoard();
-        return PrintBoard.printBoard(board, TeamColor.WHITE) +
-            "\n" +
-            PrintBoard.printBoard(board, TeamColor.BLACK);
+        return ERASE_SCREEN;
     }
 
     private static String handleJoin(Client client, String[] args) {

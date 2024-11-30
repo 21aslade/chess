@@ -90,6 +90,12 @@ public class Client {
         if (number < 1 || number > games.size()) {
             throw new ServerException("Error: invalid game index");
         }
+
+        this.game = games.get(number - 1);
+        this.team = null;
+        this.ws = new WsFacade(url, this::handleServerMessage);
+
+        ws.connect(this.session.authToken(), game.gameID());
     }
 
     public void joinGame(int number, TeamColor team) {
