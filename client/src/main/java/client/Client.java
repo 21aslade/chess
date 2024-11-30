@@ -82,7 +82,7 @@ public class Client {
         return games;
     }
 
-    public TeamColor observeGame(int number) {
+    private GameData getGame(int number) {
         if (games == null) {
             throw new ServerException("Error: list games first");
         }
@@ -91,39 +91,34 @@ public class Client {
             throw new ServerException("Error: invalid game index");
         }
 
-        var game = games.get(number - 1);
-        this.game = game;
+        return games.get(number - 1);
+    }
 
-        var team = game.userTeam(this.session.username());
+    private TeamColor connectToGame(GameData game) {
+        var team = game.userTeam(session.username());
         this.team = team;
         this.ws = new WsFacade(url, this::handleServerMessage);
 
-        ws.connect(this.session.authToken(), game.gameID());
+        ws.connect(session.authToken(), game.gameID());
         return team;
     }
 
-    public void joinGame(int number, TeamColor team) {
-        if (games == null) {
-            throw new ServerException("Error: list games first");
-        }
-
-        if (number < 1 || number > games.size()) {
-            throw new ServerException("Error: invalid game index");
-        }
-
-        var game = games.get(number - 1);
-        server.joinGame(session.authToken(), game.gameID(), team);
-
+    public TeamColor observeGame(int number) {
+        var game = getGame(number);
         this.game = game;
-        this.team = team;
-        this.ws = new WsFacade(url, this::handleServerMessage);
+        return connectToGame(game);
+    }
 
-        ws.connect(this.session.authToken(), game.gameID());
+    public void joinGame(int number, TeamColor team) {
+        var game = getGame(number);
+        this.game = game;
+        server.joinGame(session.authToken(), game.gameID(), team);
+        connectToGame(game.withUser(team, session.username()));
     }
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
         this.game.game().makeMove(move);
-        this.ws.move(this.session.authToken(), this.game.gameID(), move);
+        this.ws.move(session.authToken(), game.gameID(), move);
     }
 
     public void quit() {
