@@ -30,4 +30,9 @@ public record ChessMove(ChessPosition startPosition, ChessPosition endPosition, 
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public PieceType getPromotionPiece() { return this.promotionPiece; }
+
+    @Override
+    public String toString() {
+        return this.startPosition.toString() + " to " + this.endPosition.toString();
+    }
 }

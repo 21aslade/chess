@@ -93,7 +93,7 @@ public class WebSocketHandler {
         var game = Service.makeMove(move.getGameID(), move.getAuthToken(), move.move(), data);
         connections.broadcast(null, new LoadGameMessage(game));
 
-        var moveMessage = user.username() + " made move " + move;
+        var moveMessage = user.username() + " made move " + move.move();
         connections.broadcast(move.getAuthToken(), new NotificationMessage(moveMessage));
 
         var message = switch (game.status()) {
