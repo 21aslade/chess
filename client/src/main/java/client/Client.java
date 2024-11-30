@@ -53,6 +53,11 @@ public class Client {
         return this.team;
     }
 
+    public boolean canMove() {
+        return game.game().getTeamTurn() == this.team
+            && game.game().status().canPlay();
+    }
+
     public void register(UserData user) {
         session = server.register(user);
     }

@@ -12,6 +12,7 @@ import websocket.messages.ServerMessage;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import static ui.EscapeSequences.*;
 
@@ -38,6 +39,9 @@ public class Repl {
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
+    private static final ReplCommand MOVE_COMMAND =
+        new ReplCommand("move", List.of("src", "dest"), "make move", Repl::handleMove);
+
     public static void run(Client client) {
         var scanner = new Scanner(System.in);
         client.setWsHandler((m) -> Repl.handleMessage(client, m));
@@ -61,7 +65,7 @@ public class Repl {
         var commands = availableCommands(client);
         var command = line.trim().split(" ", 2);
 
-        var chosenCommand = commands.stream()
+        var chosenCommand = commands
             .filter((c) -> c.name().equals(command[0]))
             .findAny()
             .orElse(null);
@@ -82,11 +86,17 @@ public class Repl {
         }
     }
 
-    private static List<ReplCommand> availableCommands(Client client) {
+    private static Stream<ReplCommand> availableCommands(Client client) {
         return switch (client.state()) {
-            case LOGGED_OUT -> LOGGED_OUT_COMMANDS;
-            case LOGGED_IN -> LOGGED_IN_COMMANDS;
-            case PLAYING -> GAME_COMMANDS;
+            case LOGGED_OUT -> LOGGED_OUT_COMMANDS.stream();
+            case LOGGED_IN -> LOGGED_IN_COMMANDS.stream();
+            case PLAYING -> {
+                if (client.canMove()) {
+                    yield Stream.concat(Stream.of(MOVE_COMMAND), GAME_COMMANDS.stream());
+                } else {
+                    yield GAME_COMMANDS.stream();
+                }
+            }
         };
     }
 
@@ -199,6 +209,10 @@ public class Repl {
         return PrintBoard.printBoard(client.board(), client.team());
     }
 
+    private static String handleMove(Client client, String[] args) {
+        return "";
+    }
+
     private static void handleMessage(Client client, ServerMessage message) {
         System.out.println();
         var result = switch (message) {
@@ -224,8 +238,8 @@ public class Repl {
         }
     }
 
-    private static String helpText(List<ReplCommand> commands) {
-        var usage = commands.stream().map(ReplCommand::usageText).reduce("", (a, s) -> a + "\n - " + s);
+    private static String helpText(Stream<ReplCommand> commands) {
+        var usage = commands.map(ReplCommand::usageText).reduce("", (a, s) -> a + "\n - " + s);
         return "Usage:" + usage;
     }
 }
