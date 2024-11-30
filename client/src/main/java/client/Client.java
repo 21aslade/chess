@@ -2,6 +2,8 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame.TeamColor;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -103,10 +105,15 @@ public class Client {
         server.joinGame(session.authToken(), game.gameID(), team);
 
         this.game = game;
-        this.team = game.userTeam(this.session.username());
+        this.team = team;
         this.ws = new WsFacade(url, this::handleServerMessage);
 
         ws.connect(this.session.authToken(), game.gameID());
+    }
+
+    public void makeMove(ChessMove move) throws InvalidMoveException {
+        this.game.game().makeMove(move);
+        this.ws.move(this.session.authToken(), this.game.gameID(), move);
     }
 
     public void quit() {

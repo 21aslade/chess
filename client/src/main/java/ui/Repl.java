@@ -2,6 +2,9 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame.TeamColor;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import client.Client;
 import model.GameData;
 import model.UserData;
@@ -36,6 +39,7 @@ public class Repl {
 
     private static final List<ReplCommand> GAME_COMMANDS = List.of(
         new ReplCommand("board", List.of(), "show board", Repl::handleBoard),
+        new ReplCommand("highlight", List.of("pos"), "highlight the moves a piece can make", Repl::handleHighlight),
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
@@ -209,7 +213,32 @@ public class Repl {
         return PrintBoard.printBoard(client.board(), client.team());
     }
 
+    private static String handleHighlight(Client client, String[] args) {
+        ChessPosition p;
+        try {
+            p = ChessPosition.fromString(args[0]);
+        } catch (IllegalArgumentException e) {
+            return "Error: " + e.getMessage();
+        }
+
+        return p.toString();
+    }
+
     private static String handleMove(Client client, String[] args) {
+        ChessPosition src, dest;
+        try {
+            src = ChessPosition.fromString(args[0]);
+            dest = ChessPosition.fromString(args[1]);
+        } catch (IllegalArgumentException e) {
+            return "Error: " + e.getMessage();
+        }
+
+        var move = new ChessMove(src, dest, null);
+        try {
+            client.makeMove(move);
+        } catch (InvalidMoveException e) {
+            return "Error: invalid move";
+        }
         return "";
     }
 

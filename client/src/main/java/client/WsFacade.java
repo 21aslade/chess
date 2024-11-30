@@ -1,6 +1,8 @@
 package client;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserGameCommand.CommandType;
 import websocket.messages.ErrorMessage;
@@ -51,6 +53,10 @@ public class WsFacade extends Endpoint {
 
     public void connect(String auth, int gameId) throws ServerException {
         this.sendCommand(new UserGameCommand(CommandType.CONNECT, auth, gameId));
+    }
+
+    public void move(String auth, int gameId, ChessMove move) throws ServerException {
+        this.sendCommand(new MakeMoveCommand(auth, gameId, move));
     }
 
     private void sendCommand(UserGameCommand command) throws ServerException {
