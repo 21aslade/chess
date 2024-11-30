@@ -31,7 +31,7 @@ public record ChessPosition(int row, int col) {
 
     @Override
     public String toString() {
-        if (this.col > columns.length() || this.col < 0) {
+        if (this.col > columns.length() || this.col < 1) {
             return "ChessPosition(" + this.col + ", " + this.row + ")";
         }
         return String.format("%c%d", columns.charAt(this.col - 1), this.row);
