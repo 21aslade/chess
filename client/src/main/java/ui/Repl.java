@@ -45,7 +45,7 @@ public class Repl {
         new ReplCommand("help", List.of(), "show possible commands", Repl::handleHelp)
     );
 
-    private static final List<ReplCommand> MOVE_COMMANDS = List.of(
+    private static final List<ReplCommand> PLAYER_COMMANDS = List.of(
         new ReplCommand("move", List.of("src", "dest"), "make move", Repl::handleMove),
         new ReplCommand("resign", List.of(), "resign from the game", Repl::handleResign)
     );
@@ -99,8 +99,8 @@ public class Repl {
             case LOGGED_OUT -> LOGGED_OUT_COMMANDS.stream();
             case LOGGED_IN -> LOGGED_IN_COMMANDS.stream();
             case PLAYING -> {
-                if (client.canMove()) {
-                    yield Stream.concat(MOVE_COMMANDS.stream(), GAME_COMMANDS.stream());
+                if (client.team() != null) {
+                    yield Stream.concat(PLAYER_COMMANDS.stream(), GAME_COMMANDS.stream());
                 } else {
                     yield GAME_COMMANDS.stream();
                 }
@@ -237,6 +237,10 @@ public class Repl {
             dest = ChessPosition.fromString(args[1]);
         } catch (IllegalArgumentException e) {
             return "Error: " + e.getMessage();
+        }
+
+        if (client.game().getTeamTurn() != client.team()) {
+            return "Error: it isn't your turn";
         }
 
         var move = new ChessMove(src, dest, null);

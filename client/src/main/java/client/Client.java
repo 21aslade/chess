@@ -119,6 +119,10 @@ public class Client {
     }
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        var piece = this.game.game().getBoard().getPiece(move.startPosition());
+        if (piece == null || piece.pieceColor() != this.team) {
+            throw new InvalidMoveException();
+        }
         this.game.game().makeMove(move);
         this.ws.move(session.authToken(), game.gameID(), move);
     }
