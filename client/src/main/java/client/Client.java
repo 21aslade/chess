@@ -1,6 +1,5 @@
 package client;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessGame.TeamColor;
 import chess.ChessMove;
@@ -49,17 +48,12 @@ public class Client {
         }
     }
 
-    public ChessGame game() {
+    public ChessGame chessGame() {
         return this.game != null ? this.game.game() : null;
     }
 
     public TeamColor team() {
         return this.team;
-    }
-
-    public boolean canMove() {
-        return game.game().getTeamTurn() == this.team
-            && game.game().status().canPlay();
     }
 
     public void register(UserData user) {

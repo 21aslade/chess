@@ -199,6 +199,17 @@ public class ChessGame {
             .flatMap(this::validMovesStream).findAny().isPresent();
     }
 
+    public boolean canPromote(ChessMove move) {
+        var piece = this.board.getPiece(move.startPosition());
+        if (piece.type() != PieceType.PAWN) {
+            return false;
+        }
+
+        var rank = move.endPosition().col();
+        var promotionRank = piece.pieceColor() == TeamColor.WHITE ? 8 : 1;
+        return rank == promotionRank;
+    }
+
     /**
      * Gets the current chessboard
      *

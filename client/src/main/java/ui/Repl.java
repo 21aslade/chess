@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessGame.TeamColor;
 import chess.ChessMove;
+import chess.ChessPiece.PieceType;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
 import client.Client;
@@ -213,7 +214,7 @@ public class Repl {
     }
 
     private static String handleBoard(Client client, String[] args) {
-        return PrintBoard.printBoard(client.game().getBoard(), client.team());
+        return PrintBoard.printBoard(client.chessGame().getBoard(), client.team());
     }
 
     private static String handleHighlight(Client client, String[] args) {
@@ -224,7 +225,7 @@ public class Repl {
             return "Error: " + e.getMessage();
         }
 
-        var game = client.game();
+        var game = client.chessGame();
         var moves = game.validMovesStream(pos).map(ChessMove::endPosition).collect(Collectors.toSet());
 
         return PrintBoard.printHighlightedBoard(game.getBoard(), client.team(), pos, moves);
@@ -239,11 +240,23 @@ public class Repl {
             return "Error: " + e.getMessage();
         }
 
-        if (client.game().getTeamTurn() != client.team()) {
+        if (client.chessGame().getTeamTurn() != client.team()) {
             return "Error: it isn't your turn";
         }
 
         var move = new ChessMove(src, dest, null);
+
+        if (client.chessGame().canPromote(move)) {
+            var promotionPiece = getPromotion();
+            if (promotionPiece == null) {
+                return "Error: invalid piece";
+            } else if (promotionPiece == PieceType.PAWN) {
+                return "Error: cannot promote to pawn";
+            }
+
+            move = new ChessMove(src, dest, promotionPiece);
+        }
+
         try {
             client.makeMove(move);
         } catch (InvalidMoveException e) {
@@ -252,13 +265,25 @@ public class Repl {
         return "";
     }
 
+    private static PieceType getPromotion() {
+        System.out.print("Promote to what piece? ");
+        System.out.flush();
+        var response = new Scanner(System.in).nextLine();
+        try {
+            return PieceType.valueOf(response.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     private static String handleLeave(Client client, String[] args) {
         client.leave();
         return "Successfully left game.";
     }
 
     private static String handleResign(Client client, String[] args) {
-        System.out.println("Are you sure you want to resign? (y/n) ");
+        System.out.print("Are you sure you want to resign? (y/n) ");
+        System.out.flush();
         var response = new Scanner(System.in).nextLine();
         if (response.trim().equalsIgnoreCase("y")) {
             client.resign();
@@ -271,7 +296,7 @@ public class Repl {
     private static void handleMessage(Client client, ServerMessage message) {
         System.out.println(ERASE_LINE);
         var result = switch (message) {
-            case LoadGameMessage ignored -> PrintBoard.printBoard(client.game().getBoard(), client.team());
+            case LoadGameMessage ignored -> PrintBoard.printBoard(client.chessGame().getBoard(), client.team());
             case NotificationMessage n -> n.message();
             case ErrorMessage e -> SET_TEXT_COLOR_RED + e.message() + SET_TEXT_COLOR_WHITE;
             default -> throw new IllegalStateException("Unexpected message: " + message);
