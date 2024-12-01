@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessBoard;
+import chess.ChessGame;
 import chess.ChessGame.TeamColor;
 import chess.ChessMove;
 import chess.InvalidMoveException;
@@ -48,8 +49,8 @@ public class Client {
         }
     }
 
-    public ChessBoard board() {
-        return this.game != null ? this.game.game().getBoard() : null;
+    public ChessGame game() {
+        return this.game != null ? this.game.game() : null;
     }
 
     public TeamColor team() {

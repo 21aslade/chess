@@ -14,6 +14,7 @@ import websocket.messages.ServerMessage;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ui.EscapeSequences.*;
@@ -212,18 +213,21 @@ public class Repl {
     }
 
     private static String handleBoard(Client client, String[] args) {
-        return PrintBoard.printBoard(client.board(), client.team());
+        return PrintBoard.printBoard(client.game().getBoard(), client.team());
     }
 
     private static String handleHighlight(Client client, String[] args) {
-        ChessPosition p;
+        ChessPosition pos;
         try {
-            p = ChessPosition.fromString(args[0]);
+            pos = ChessPosition.fromString(args[0]);
         } catch (IllegalArgumentException e) {
             return "Error: " + e.getMessage();
         }
 
-        return p.toString();
+        var game = client.game();
+        var moves = game.validMovesStream(pos).map(ChessMove::endPosition).collect(Collectors.toSet());
+
+        return PrintBoard.printHighlightedBoard(game.getBoard(), client.team(), pos, moves);
     }
 
     private static String handleMove(Client client, String[] args) {
@@ -263,7 +267,7 @@ public class Repl {
     private static void handleMessage(Client client, ServerMessage message) {
         System.out.println();
         var result = switch (message) {
-            case LoadGameMessage ignored -> PrintBoard.printBoard(client.board(), client.team());
+            case LoadGameMessage ignored -> PrintBoard.printBoard(client.game().getBoard(), client.team());
             case NotificationMessage n -> n.message();
             case ErrorMessage e -> SET_TEXT_COLOR_RED + e.message() + SET_TEXT_COLOR_WHITE;
             default -> throw new IllegalStateException("Unexpected message: " + message);
