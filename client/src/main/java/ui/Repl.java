@@ -265,7 +265,7 @@ public class Repl {
     }
 
     private static void handleMessage(Client client, ServerMessage message) {
-        System.out.println();
+        System.out.println(ERASE_LINE);
         var result = switch (message) {
             case LoadGameMessage ignored -> PrintBoard.printBoard(client.game().getBoard(), client.team());
             case NotificationMessage n -> n.message();
